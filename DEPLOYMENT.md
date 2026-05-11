@@ -8,6 +8,22 @@
 本地项目 -> GitHub 仓库 -> Vercel 自动部署 -> 互联网访问
 ```
 
+## 当前线上地址
+
+当前生产环境已经部署到：
+
+```text
+https://personalblogweb.vercel.app
+```
+
+当前 Vercel 项目：
+
+```text
+itsr0lls-projects/personalblogweb
+```
+
+当前是通过 Vercel CLI 从本地完成部署。GitHub 仓库已经推送成功，但 Vercel CLI 自动连接 GitHub 仓库时失败过一次；如果你希望以后每次 `git push` 后自动部署，请在 Vercel 控制台确认该项目已经连接到 GitHub 仓库 `itsR0LL/personalBlogweb`。
+
 ## 1. 推荐方案
 
 推荐使用 Vercel。
