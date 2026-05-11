@@ -1,0 +1,16 @@
+# Vercel only needs the public-facing Next.js app at the repository root.
+# Keep the local management app and development artifacts out of deployments.
+
+my-blog-manager/
+
+*.log
+dev-server*.log
+__pycache__/
+*.py[cod]
+
+.env*
+.next/
+node_modules/
+
+DEPLOYMENT.md
+USER_MANUAL.md
