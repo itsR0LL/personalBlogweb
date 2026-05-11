@@ -1,0 +1,58 @@
+import fs from 'fs';
+import path from 'path';
+import matter from 'gray-matter';
+import Navbar from '../../components/Navbar';
+import PageTransition from '../../components/PageTransition';
+import MomentList from './MomentList';
+import { siteConfig } from '../../siteConfig';
+
+type Moment = {
+  id: string;
+  date: string;
+  location: string;
+  images: string[];
+  content: string;
+};
+
+export const metadata = {
+  title: "Moments | R0L1 Studio",
+  description: "Short timeline updates and build moments",
+};
+
+export default function MomentsPage() {
+  const momentsDirectory = path.join(process.cwd(), 'moments');
+  let allMoments: Moment[] = [];
+
+  try {
+    if (fs.existsSync(momentsDirectory)) {
+      const fileNames = fs.readdirSync(momentsDirectory).filter(fileName => fileName.endsWith('.md'));
+      allMoments = fileNames.map(fileName => {
+        const fullPath = path.join(momentsDirectory, fileName);
+        const { data, content } = matter(fs.readFileSync(fullPath, 'utf8'));
+
+        return {
+          id: data.id || fileName.replace(/\.md$/, ''),
+          date: data.date || '1970-01-01',
+          location: data.location || '',
+          images: data.images || [],
+          content: content.trim(),
+        };
+      }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }
+  } catch (error) {
+    console.error("Failed to read moments:", error);
+  }
+
+  return (
+    <div className="min-h-screen relative pb-10 flex flex-col">
+      <Navbar />
+      <PageTransition className="flex-1 flex flex-col">
+        <MomentList
+          moments={allMoments}
+          authorName={siteConfig.authorName}
+          avatarUrl={siteConfig.avatarUrl}
+        />
+      </PageTransition>
+    </div>
+  );
+}
