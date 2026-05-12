@@ -2,7 +2,7 @@
 title: "Starting a Personal Blog with an AI Agent Workflow"
 date: "2026-05-11 09:00:00"
 description: "The first note for this blog: why this site exists and how the workflow will be used."
-cover: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop"
+cover: "https://images.pexels.com/photos/12815225/pexels-photo-12815225.jpeg?auto=compress&cs=tinysrgb&w=1600"
 tags: ["AI Agent", "Workflow", "Blog"]
 ---
 

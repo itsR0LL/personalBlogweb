@@ -60,7 +60,7 @@ interface MusicContextType {
 
 const MusicContext = createContext<MusicContextType | null>(null);
 
-const fallbackCover = 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop';
+const fallbackCover = siteConfig.musicFallbackCover;
 
 function parseLrc(lrcText: string): LyricLine[] {
   if (!lrcText || lrcText.length > 30000) return [];
@@ -88,6 +88,16 @@ function parseLrc(lrcText: string): LyricLine[] {
 
 function toStringValue(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value : fallback;
+}
+
+function toStableCover(value: unknown, fallback = fallbackCover) {
+  const cover = toStringValue(value);
+
+  if (!cover || cover.includes('api.injahow.cn/meting/?server=netease&type=pic')) {
+    return fallback;
+  }
+
+  return cover;
 }
 
 export function MusicProvider({ children }: { children: ReactNode }) {
@@ -143,7 +153,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
 
             const title = toStringValue(song.name, toStringValue(song.title, '未命名歌曲'));
             const artist = toStringValue(song.author, toStringValue(song.artist, '未知歌手'));
-            const cover = toStringValue(song.pic, toStringValue(song.cover, fallbackCover));
+            const cover = toStableCover(song.pic, toStableCover(song.cover));
             const lrcUrl = toStringValue(song.lrc) || undefined;
 
             return {

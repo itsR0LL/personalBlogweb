@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
+import { siteConfig } from '../siteConfig';
 
 // 安全解析 LRC 歌词
 function parseLrc(lrcText: string) {
@@ -65,7 +66,7 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
               id: song.id,
               title: song.name || '未知歌曲',
               artist: song.artist || '未知歌手',
-              cover: song.cover || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=300',
+              cover: song.cover || siteConfig.musicFallbackCover,
               src: song.url,
               lrcUrl: song.lrc
             };
@@ -208,7 +209,14 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
 
         <div className="flex items-center gap-5 relative z-10 mb-6 mt-2">
           <div className={`w-20 h-20 rounded-full border-2 border-white/50 shadow-lg flex-shrink-0 overflow-hidden relative ${isPlaying ? 'animate-[spin_6s_linear_infinite]' : ''}`}>
-            <img src={currentSong.cover} alt="cover" className="w-full h-full object-cover" />
+            <img
+              src={currentSong.cover}
+              alt="cover"
+              className="w-full h-full object-cover"
+              onError={(event) => {
+                event.currentTarget.src = siteConfig.musicFallbackCover;
+              }}
+            />
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 bg-white/80 backdrop-blur-sm rounded-full border border-gray-300 shadow-inner"></div>
           </div>

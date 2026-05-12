@@ -6,7 +6,7 @@ tags:
   - Blog
   - Build Note
 mood: focused
-cover: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop
+cover: https://images.pexels.com/photos/30547594/pexels-photo-30547594.jpeg?auto=compress&cs=tinysrgb&w=1600
 description: A short note about using the AI team workflow to build this site.
 ---
 

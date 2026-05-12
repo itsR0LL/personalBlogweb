@@ -4,7 +4,7 @@ date: '2026-05-11'
 tags:
   - About
   - Solo Developer
-cover: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop
+cover: https://images.pexels.com/photos/11447114/pexels-photo-11447114.jpeg?auto=compress&cs=tinysrgb&w=1600
 description: A short introduction for this personal blog.
 ---
 

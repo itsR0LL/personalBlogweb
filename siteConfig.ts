@@ -2,7 +2,7 @@
 
 export const siteConfig = {
   title: "R0L1 Studio | Personal Blog",
-  faviconUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=256&auto=format&fit=crop",
+  faviconUrl: "https://images.pexels.com/photos/30547594/pexels-photo-30547594.jpeg?auto=compress&cs=tinysrgb&w=256",
   authorName: "R0L1",
   bio: "A solo developer's field notes on AI agents, product building, software engineering, and independent creation.",
 
@@ -10,14 +10,14 @@ export const siteConfig = {
   navSuffix: "|",
   navAfter: "Personal Blog",
 
-  avatarUrl: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?q=80&w=400&auto=format&fit=crop",
+  avatarUrl: "https://images.pexels.com/photos/11447114/pexels-photo-11447114.jpeg?auto=compress&cs=tinysrgb&w=400",
 
   useGradient: false,
   themeColors: ["#f472b6", "#818cf8", "#22d3ee", "#facc15"],
   bgImages: [
-    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2400&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2400&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2400&auto=format&fit=crop",
+    "https://images.pexels.com/photos/18358477/pexels-photo-18358477.jpeg?auto=compress&cs=tinysrgb&w=2400",
+    "https://images.pexels.com/photos/34991521/pexels-photo-34991521.jpeg?auto=compress&cs=tinysrgb&w=2400",
+    "https://images.pexels.com/photos/37144806/pexels-photo-37144806/free-photo-of-rainy-nightscape-in-a-bustling-asian-city.jpeg?auto=compress&cs=tinysrgb&w=2400",
   ],
   timeThemeBackgrounds: [
     {
@@ -43,9 +43,9 @@ export const siteConfig = {
       label: "Tokyo at Dusk",
       hours: [16, 19],
       image:
-        "https://images.pexels.com/photos/29531010/pexels-photo-29531010.jpeg?auto=compress&cs=tinysrgb&w=2400",
-      source: "Pexels / Diana Nguyen",
-      sourceUrl: "https://www.pexels.com/photo/vibrant-tokyo-cityscape-at-dusk-29531010/",
+        "https://images.pexels.com/photos/34991521/pexels-photo-34991521.jpeg?auto=compress&cs=tinysrgb&w=2400",
+      source: "Pexels / Anh Nguyen",
+      sourceUrl: "https://www.pexels.com/photo/tokyo-skyline-at-dusk-with-illuminated-tower-34991521/",
     },
     {
       id: "night",
@@ -58,8 +58,10 @@ export const siteConfig = {
     },
   ],
 
-  defaultPostCover: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop",
-  photoWallImage: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop",
+  defaultPostCover: "https://images.pexels.com/photos/25630342/pexels-photo-25630342.jpeg?auto=compress&cs=tinysrgb&w=1600",
+  fallbackChatterCover: "https://images.pexels.com/photos/30547594/pexels-photo-30547594.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  musicFallbackCover: "https://images.pexels.com/photos/30563921/pexels-photo-30563921.jpeg?auto=compress&cs=tinysrgb&w=1000",
+  photoWallImage: "https://images.pexels.com/photos/31359811/pexels-photo-31359811.jpeg?auto=compress&cs=tinysrgb&w=1600",
   cloudMusicIds: ["1809646618", "3361076230", "1859390262"],
 
   social: {

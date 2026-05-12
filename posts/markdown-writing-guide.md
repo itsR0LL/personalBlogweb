@@ -2,7 +2,7 @@
 title: "Markdown Writing Guide for This Blog"
 date: "2026-05-11 11:00:00"
 description: "A starter guide for creating articles in the posts directory."
-cover: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=1600&auto=format&fit=crop"
+cover: "https://images.pexels.com/photos/25435827/pexels-photo-25435827.jpeg?auto=compress&cs=tinysrgb&w=1600"
 tags:
   - Markdown
   - Writing
