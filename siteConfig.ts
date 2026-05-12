@@ -13,7 +13,7 @@ export const siteConfig = {
   avatarUrl: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?q=80&w=400&auto=format&fit=crop",
 
   useGradient: false,
-  themeColors: ["#0f766e", "#2563eb", "#f59e0b", "#ef4444"],
+  themeColors: ["#f472b6", "#818cf8", "#22d3ee", "#facc15"],
   bgImages: [
     "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2400&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2400&auto=format&fit=crop",
