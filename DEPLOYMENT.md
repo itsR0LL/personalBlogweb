@@ -148,6 +148,8 @@ QWEATHER_KEY=你的和风天气 Key
 说明：
 
 - `GEMINI_API_KEY` 用于 AI 助手。
+- 当前 AI 助手使用 `siteConfig.ts` 中配置的 `gemini-2.5-flash-lite`。
+- Gemini Key 可以在 Google AI Studio 创建，先使用免费层即可，不要把 Key 写进仓库。
 - `QWEATHER_KEY` 用于天气接口。
 - 不要把真实 Key 写进 GitHub 仓库。
 - 添加环境变量后，需要重新部署一次。
