@@ -14,8 +14,6 @@ import SplashScreen from "../components/SplashScreen";
 import CyberCat from '../components/CyberCat';
 import DanmakuBackground from '../components/DanmakuBackground';
 
-import MobileBackButton from '../components/MobileBackButton';
-
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
@@ -62,7 +60,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
 
-      <body className="w-screen overflow-x-hidden min-h-full flex flex-col relative transition-colors duration-1000 bg-slate-50 dark:bg-slate-950 font-serif">
+      <body className="w-full overflow-x-hidden min-h-full flex flex-col relative transition-colors duration-1000 bg-slate-50 dark:bg-slate-950 font-serif">
         <ThemeProvider>
 
           <SplashScreen />
@@ -83,8 +81,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 ></div>
 
                 {/* 👇 🌟 优化：手机端去掉了 mix-blend-overlay，但保留了 blur 模糊光晕，确保视觉不打折 */}
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/40 dark:bg-indigo-900/20 blur-[100px] rounded-full z-[-7] md:mix-blend-overlay"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/30 dark:bg-purple-900/30 blur-[100px] rounded-full z-[-7] md:mix-blend-overlay"></div>
+                <div className="hidden md:block absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/40 dark:bg-indigo-900/20 blur-[100px] rounded-full z-[-7] md:mix-blend-overlay"></div>
+                <div className="hidden md:block absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/30 dark:bg-purple-900/30 blur-[100px] rounded-full z-[-7] md:mix-blend-overlay"></div>
 
                 {/* 隐藏手机端高负载粒子特效 */}
                 <div className="hidden md:block absolute inset-0 w-full h-full">
@@ -107,10 +105,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
               <div className="hidden md:block">
                 <GlobalToolbox />
-              </div>
-
-              <div className="md:hidden block">
-                <MobileBackButton />
               </div>
 
               {/* 隐藏手机端点击粒子 */}

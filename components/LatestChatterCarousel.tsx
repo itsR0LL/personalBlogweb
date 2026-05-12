@@ -28,7 +28,7 @@ export default function LatestChatterCarousel({ chatters }: { chatters: any[] })
 
   return (
     // 🌟 注意这里：去掉了 md:col-span-8，变成一个纯粹填满父容器的组件
-    <div className="w-full h-full rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl overflow-hidden relative group min-h-[220px] flex flex-col">
+    <div className="w-full h-full rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl overflow-hidden relative group min-h-[200px] sm:min-h-[220px] flex flex-col">
       <Link href={currentChatter.slug === 'none' ? '/chatter' : `/chatter/${currentChatter.slug}`} className="absolute inset-0 z-20" aria-label={`查看杂谈: ${currentChatter.title}`} />
 
       <AnimatePresence mode="wait">
@@ -46,8 +46,8 @@ export default function LatestChatterCarousel({ chatters }: { chatters: any[] })
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative z-10 flex flex-col justify-center p-6 md:p-8 h-full pointer-events-none w-full md:w-[85%]">
-        <div className="flex items-end gap-2 mb-2">
+      <div className="relative z-10 flex flex-col justify-center p-5 sm:p-6 md:p-8 h-full pointer-events-none w-full md:w-[85%]">
+        <div className="flex flex-wrap items-end gap-2 mb-2">
           <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest bg-black/30 backdrop-blur-sm px-2 py-1 rounded-md border border-white/10 shadow-sm">
             Records
           </span>
@@ -58,7 +58,7 @@ export default function LatestChatterCarousel({ chatters }: { chatters: any[] })
           )}
         </div>
 
-        <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-indigo-300 transition-colors line-clamp-1 drop-shadow-md">
+        <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 group-hover:text-indigo-300 transition-colors line-clamp-2 drop-shadow-md">
           {currentChatter.title}
         </h3>
         <p className="text-sm text-slate-300 font-medium leading-relaxed drop-shadow-md line-clamp-2">

@@ -1,10 +1,10 @@
 "use client";
 
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, PanInfo } from 'framer-motion';
-import { X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
 import { siteConfig } from '../siteConfig';
 
 export default function Navbar() {
@@ -13,51 +13,10 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  // --- 🌟 物理引擎：菜单转动逻辑 ---
-  const wheelRef = useRef<HTMLDivElement>(null);
-  const rawRotation = useMotionValue(0);
-  const smoothRotation = useSpring(rawRotation, { stiffness: 200, damping: 25 });
-  const inverseRotation = useTransform(smoothRotation, (r) => -r);
-
-  const handlePan = (event: any, info: PanInfo) => {
-    if (!wheelRef.current) return;
-    const rect = wheelRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const currX = info.point.x;
-    const currY = info.point.y;
-    const prevX = currX - info.delta.x;
-    const prevY = currY - info.delta.y;
-    const prevAngle = Math.atan2(prevY - centerY, prevX - centerX);
-    const currAngle = Math.atan2(currY - centerY, currX - centerX);
-    let deltaAngle = (currAngle - prevAngle) * (180 / Math.PI);
-    if (deltaAngle > 180) deltaAngle -= 360;
-    if (deltaAngle < -180) deltaAngle += 360;
-    rawRotation.set(rawRotation.get() + deltaAngle);
-  };
-
-  // --- 🌟 物理引擎：手机端按钮拖拽逻辑 ---
-  // 使用 MotionValue 记录 Y 轴偏移
-  const dragY = useMotionValue(0);
-  // 约束范围状态（防止拖出屏幕）
-  const [constraints, setConstraints] = useState({ top: 0, bottom: 0 });
-
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // 按钮高度是 112px (h-28)，我们给上下留一点安全边距
-      const vh = window.innerHeight;
-      setConstraints({
-        top: -(vh / 2) + 80,
-        bottom: (vh / 2) - 80
-      });
-    }
-  }, []);
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
-  useEffect(() => {
-    if (isMobileMenuOpen) rawRotation.set(0);
-  }, [isMobileMenuOpen, rawRotation]);
-
-  // 控制 PC 端导航栏
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -68,6 +27,7 @@ export default function Navbar() {
       }
       setLastScrollY(currentScrollY);
     };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
@@ -86,7 +46,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* PC端导航栏 */}
       <header className={`hidden md:block w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-white/40 dark:bg-slate-900/50 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-sm`}>
         <div className="w-[90%] max-w-6xl mx-auto h-16 flex items-center justify-between px-4 sm:px-[30px] box-border">
           <Link href="/" className="text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300">
@@ -100,7 +59,7 @@ export default function Navbar() {
               return (
                 <Link key={link.href} href={link.href} className={`relative py-1 transition-colors ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-200 hover:text-indigo-600'}`}>
                   {link.name}
-                  {isActive && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-500 rounded-full animate-pulse"></span>}
+                  {isActive && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-500 rounded-full animate-pulse" />}
                 </Link>
               );
             })}
@@ -108,94 +67,80 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* 📱 手机端：可拖拽吸附的触发球 */}
-      <div className="md:hidden">
-        <motion.button
-          drag="y" // 🌟 允许垂直拖拽
-          dragConstraints={constraints} // 🌟 限制在屏幕内
-          dragElastic={0.1}
-          dragMomentum={false} // 🌟 松手即停，实现位置吸附
-          style={{ y: dragY }}
-          onClick={() => {
-            // 只有当拖拽位移很小时才判定为点击，防止误触
-            if (Math.abs(dragY.getVelocity()) < 10) {
-              setIsMobileMenuOpen(true);
-            }
-          }}
-          className={`fixed top-1/2 right-0 -translate-y-1/2 w-12 h-28 bg-indigo-500/80 backdrop-blur-xl rounded-l-full shadow-[-5px_0_20px_rgba(99,102,241,0.4)] z-[60] flex items-center justify-center transition-all duration-500 border-y border-l border-white/30 touch-none ${isMobileMenuOpen ? 'translate-x-full opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'}`}
-        >
-          <div className="flex flex-col gap-1.5 items-center justify-center mr-2">
-            <div className="w-1.5 h-1.5 bg-white/90 rounded-full"></div>
-            <div className="w-1.5 h-1.5 bg-white/90 rounded-full"></div>
-            <div className="w-1.5 h-1.5 bg-white/90 rounded-full"></div>
-          </div>
-        </motion.button>
+      <header className={`md:hidden fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${showNav || isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div className="mx-3 mt-3 h-14 rounded-2xl bg-white/65 dark:bg-slate-900/70 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-xl flex items-center justify-between px-3">
+          <Link
+            href="/"
+            className="min-w-0 flex items-center gap-2 text-slate-900 dark:text-white"
+            aria-label="返回首页"
+          >
+            <span className="h-8 w-8 rounded-xl bg-indigo-500 text-white flex items-center justify-center text-xs font-black shadow-md">
+              {siteConfig.authorName?.slice(0, 1) || 'R'}
+            </span>
+            <span className="min-w-0 truncate text-sm font-black tracking-wide">
+              {siteConfig.navTitle || siteConfig.authorName}
+            </span>
+          </Link>
 
-        {/* 2. 居中展开的巨型全圆转轴 (逻辑保持不变) */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[65]"
-              />
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen((open) => !open)}
+            aria-expanded={isMobileMenuOpen}
+            aria-label={isMobileMenuOpen ? '关闭导航菜单' : '打开导航菜单'}
+            className="h-10 w-10 rounded-xl bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+          >
+            {isMobileMenuOpen ? <X size={20} strokeWidth={2.6} /> : <Menu size={21} strokeWidth={2.6} />}
+          </button>
+        </div>
+      </header>
 
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0, rotate: -90 }}
-                animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                exit={{ scale: 0.5, opacity: 0, rotate: 90 }}
-                transition={{ type: 'spring', damping: 20, stiffness: 150 }}
-                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[320px] z-[70] pointer-events-none"
-              >
-                <motion.div
-                  ref={wheelRef}
-                  style={{ rotate: smoothRotation }}
-                  onPan={handlePan}
-                  className="w-full h-full rounded-full border border-white/30 dark:border-slate-500/50 bg-white/40 dark:bg-slate-800/50 backdrop-blur-3xl shadow-[0_0_50px_rgba(0,0,0,0.3)] pointer-events-auto relative cursor-grab active:cursor-grabbing"
-                >
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-700 border-4 border-slate-300 dark:border-slate-500 flex items-center justify-center shadow-inner z-10">
-                    <button onClick={() => setIsMobileMenuOpen(false)} className="w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-black shadow-lg hover:bg-red-500 hover:rotate-90 transition-all duration-300 active:scale-95">
-                      <X size={22} strokeWidth={2.6} />
-                    </button>
-                  </div>
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            className="md:hidden fixed inset-0 z-[55]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+          >
+            <button
+              type="button"
+              aria-label="关闭导航菜单"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute inset-0 w-full h-full bg-slate-950/45 backdrop-blur-sm"
+            />
 
-                  {navLinks.map((link, index) => {
-                    const isActive = pathname === link.href || pathname === `${link.href}/`;
-                    const angle = index * (360 / navLinks.length);
-
-                    return (
-                      <div
-                        key={link.href}
-                        className="absolute top-1/2 left-1/2 w-14 h-14 -ml-7 -mt-7 flex items-center justify-center"
-                        style={{
-                          transform: `rotate(${angle}deg) translateY(-115px) rotate(${-angle}deg)`
-                        }}
-                      >
-                        <motion.div style={{ rotate: inverseRotation }} className="w-full h-full">
-                          <Link
-                            href={link.href}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className={`flex items-center justify-center w-full h-full rounded-full transition-all duration-300 ${
-                              isActive 
-                                ? 'bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.8)] scale-110' 
-                                : 'bg-white/90 dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-md hover:scale-110 border border-white/50 dark:border-slate-600'
-                            }`}
-                          >
-                            <span className="text-[11px] font-black">{link.name}</span>
-                          </Link>
-                        </motion.div>
-                      </div>
-                    );
-                  })}
-                </motion.div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-      </div>
+            <motion.nav
+              initial={{ opacity: 0, y: -10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="absolute left-3 right-3 top-20 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-2xl p-3 max-h-[calc(100dvh-6rem)] overflow-y-auto"
+            >
+              <div className="grid grid-cols-2 gap-2">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href || pathname === `${link.href}/`;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`min-h-12 rounded-xl px-4 flex items-center justify-between text-sm font-black transition-colors ${
+                        isActive
+                          ? 'bg-indigo-500 text-white shadow-md'
+                          : 'bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 active:bg-indigo-100 dark:active:bg-slate-700'
+                      }`}
+                    >
+                      <span>{link.name}</span>
+                      {isActive && <span className="h-2 w-2 rounded-full bg-white/90" />}
+                    </Link>
+                  );
+                })}
+              </div>
+            </motion.nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
