@@ -17,24 +17,20 @@ export const albums: Album[] = [
     id: "workspace",
     title: "Workspace",
     description: "Daily scenes from building, reading, writing, and debugging.",
-    cover: "https://images.pexels.com/photos/12815225/pexels-photo-12815225.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    cover: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop",
     date: "2026.05",
     photos: [
       {
-        url: "https://images.pexels.com/photos/12815225/pexels-photo-12815225.jpeg?auto=compress&cs=tinysrgb&w=1200",
+        url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=1200&auto=format&fit=crop",
         caption: "Morning planning desk",
       },
       {
-        url: "https://images.pexels.com/photos/25435827/pexels-photo-25435827.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        caption: "Build notes and color references",
+        url: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop",
+        caption: "Build notes and browser checks",
       },
       {
-        url: "https://images.pexels.com/photos/11447114/pexels-photo-11447114.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        caption: "Late-night implementation room",
-      },
-      {
-        url: "https://images.pexels.com/photos/30547594/pexels-photo-30547594.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        caption: "Abstract system map",
+        url: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1200&auto=format&fit=crop",
+        caption: "Code, coffee, and a short test loop",
       },
     ],
   },
@@ -42,24 +38,16 @@ export const albums: Album[] = [
     id: "outside",
     title: "Outside",
     description: "A small reminder that ideas need fresh air.",
-    cover: "https://images.pexels.com/photos/31359811/pexels-photo-31359811.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    cover: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop",
     date: "2026.05",
     photos: [
       {
-        url: "https://images.pexels.com/photos/31359811/pexels-photo-31359811.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        caption: "Rainy side street after a release",
+        url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop",
+        caption: "Walk after a release",
       },
       {
-        url: "https://images.pexels.com/photos/33269330/pexels-photo-33269330.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        caption: "Neon alley between backlog passes",
-      },
-      {
-        url: "https://images.pexels.com/photos/31118383/pexels-photo-31118383.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        caption: "Night rain and quiet streets",
-      },
-      {
-        url: "https://images.pexels.com/photos/34991521/pexels-photo-34991521.jpeg?auto=compress&cs=tinysrgb&w=1200",
-        caption: "Tokyo dusk lights",
+        url: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop",
+        caption: "Open road, open backlog",
       },
     ],
   },

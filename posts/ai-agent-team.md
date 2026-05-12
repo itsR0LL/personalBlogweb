@@ -2,7 +2,7 @@
 title: "Designing a Solo-Developer AI Team"
 date: "2026-05-11 10:00:00"
 description: "A compact design note for using specialist AI roles without turning a solo project into process theater."
-cover: "https://images.pexels.com/photos/25630342/pexels-photo-25630342.jpeg?auto=compress&cs=tinysrgb&w=1600"
+cover: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=1600&auto=format&fit=crop"
 tags: ["AI Agent", "Product", "Engineering"]
 ---
 

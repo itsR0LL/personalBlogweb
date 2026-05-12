@@ -24,11 +24,10 @@ import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
 import Comments from '../../components/Comments';
 import { LyricLine, MusicSong, useMusic } from '../../components/MusicProvider';
-import { siteConfig } from '../../siteConfig';
 
 type MusicTab = 'lyrics' | 'playlist';
 
-const fallbackCover = siteConfig.musicFallbackCover;
+const fallbackCover = 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop';
 
 function formatTime(time: number) {
   if (!Number.isFinite(time) || time <= 0) return '0:00';
@@ -172,15 +171,7 @@ export default function MusicPage() {
                     className={`absolute inset-0 w-full h-full rounded-full border-[4px] md:border-[6px] border-white/80 dark:border-slate-600/80 shadow-2xl overflow-hidden transition-transform duration-700 z-10 rotating-disc ${isPlaying ? 'scale-100' : 'scale-95'}`}
                     style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
                   >
-                    <img
-                      src={songCover}
-                      alt={currentSong.title}
-                      className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
-                      onError={(event) => {
-                        event.currentTarget.src = fallbackCover;
-                      }}
-                    />
+                    <img src={songCover} alt={currentSong.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 m-auto w-10 h-10 md:w-12 md:h-12 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-full z-30 shadow-inner border border-slate-300 dark:border-slate-700" />
                     <div className="absolute inset-0 z-20 rounded-full pointer-events-none opacity-20" style={{ background: 'conic-gradient(from 0deg, transparent, rgba(255,255,255,0.4), transparent, rgba(255,255,255,0.4), transparent)' }} />
                   </motion.div>
@@ -339,14 +330,7 @@ export default function MusicPage() {
                             >
                               <span className="flex items-center gap-3 md:gap-4 min-w-0">
                                 <span className="relative w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-lg md:rounded-xl overflow-hidden shadow-sm">
-                                  <img
-                                    src={song.cover}
-                                    alt={song.title}
-                                    className="w-full h-full object-cover"
-                                    onError={(event) => {
-                                      event.currentTarget.src = fallbackCover;
-                                    }}
-                                  />
+                                  <img src={song.cover} alt={song.title} className="w-full h-full object-cover" />
                                   {isCurrentSong && isPlaying && (
                                     <span className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
                                       <span className="flex gap-[3px] items-end h-2 md:h-3">

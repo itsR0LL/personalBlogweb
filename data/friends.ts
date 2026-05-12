@@ -20,7 +20,7 @@ export const friendsData: Friend[] = [
     id: "openai",
     name: "OpenAI Developers",
     description: "References for building AI products, agents, tools, and eval workflows.",
-    avatar: "https://images.pexels.com/photos/25630342/pexels-photo-25630342.jpeg?auto=compress&cs=tinysrgb&w=400",
+    avatar: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=400&auto=format&fit=crop",
     url: "https://platform.openai.com/docs",
     themeColor: "rgba(20, 184, 166, 0.45)",
   },
