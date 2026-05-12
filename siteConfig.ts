@@ -19,6 +19,44 @@ export const siteConfig = {
     "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2400&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2400&auto=format&fit=crop",
   ],
+  timeThemeBackgrounds: [
+    {
+      id: "dawn",
+      label: "Morning Skyline",
+      hours: [5, 10],
+      image:
+        "https://images.pexels.com/photos/18358477/pexels-photo-18358477.jpeg?auto=compress&cs=tinysrgb&w=2400",
+      source: "Pexels / Shakur Muller",
+      sourceUrl: "https://www.pexels.com/photo/foggy-tokyo-cityscape-at-sunrise-18358477/",
+    },
+    {
+      id: "day",
+      label: "Sunlit Workspace",
+      hours: [10, 16],
+      image:
+        "https://images.pexels.com/photos/34109400/pexels-photo-34109400.jpeg?auto=compress&cs=tinysrgb&w=2400",
+      source: "Pexels / Jakub Zerdzicki",
+      sourceUrl: "https://www.pexels.com/photo/sunlit-laptop-workspace-with-red-wall-34109400/",
+    },
+    {
+      id: "dusk",
+      label: "Tokyo at Dusk",
+      hours: [16, 19],
+      image:
+        "https://images.pexels.com/photos/29531010/pexels-photo-29531010.jpeg?auto=compress&cs=tinysrgb&w=2400",
+      source: "Pexels / Diana Nguyen",
+      sourceUrl: "https://www.pexels.com/photo/vibrant-tokyo-cityscape-at-dusk-29531010/",
+    },
+    {
+      id: "night",
+      label: "Neon Rain",
+      hours: [19, 5],
+      image:
+        "https://images.pexels.com/photos/37144806/pexels-photo-37144806/free-photo-of-rainy-nightscape-in-a-bustling-asian-city.jpeg?auto=compress&cs=tinysrgb&w=2400",
+      source: "Pexels / Clarence Chan",
+      sourceUrl: "https://www.pexels.com/photo/rainy-nightscape-in-a-bustling-asian-city-37144806/",
+    },
+  ],
 
   defaultPostCover: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop",
   photoWallImage: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop",
