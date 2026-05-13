@@ -154,6 +154,35 @@ QWEATHER_KEY=你的和风天气 Key
 - 不要把真实 Key 写进 GitHub 仓库。
 - 添加环境变量后，需要重新部署一次。
 
+如果要启用线上 `/manager` 管理入口，还需要添加：
+
+```text
+MANAGER_ADMIN_PASSWORD=一个足够长的后台密码
+GITHUB_TOKEN=GitHub fine-grained token
+GITHUB_OWNER=itsR0LL
+GITHUB_REPO=personalBlogweb
+GITHUB_BRANCH=main
+GITHUB_COMMITTER_NAME=R0L1 Blog Manager
+GITHUB_COMMITTER_EMAIL=你的 GitHub 邮箱
+```
+
+`GITHUB_TOKEN` 建议使用 GitHub fine-grained personal access token，只给 `itsR0LL/personalBlogweb` 仓库的 Contents read/write 权限。不要使用权限过大的全账号 Token。
+
+线上管理入口为：
+
+```text
+https://personalblogweb.vercel.app/manager
+```
+
+当前 `/manager` 一期能力：
+
+- 使用 `MANAGER_ADMIN_PASSWORD` 保护读写 API。
+- 可以读取和提交白名单内的源码文件。
+- 写入通过 GitHub Contents API 生成 commit。
+- GitHub 收到 commit 后，由 Vercel Git 集成触发重新部署。
+
+当前 `/manager` 不包含旧本地管理器的 Python API、桌面窗口、图片上传到本地图床等本地能力。
+
 重新部署方式：
 
 1. 进入 Vercel 项目。
