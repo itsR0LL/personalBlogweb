@@ -78,16 +78,14 @@ npm run build
 
 The original webmaster manager is kept as a separate app under
 `my-blog-manager/`. Do not copy it into the public site's `app/manager`
-route. Deploy it as a second Vercel project from the same GitHub repository
-with the project Root Directory set to `my-blog-manager`.
+route. It is currently intended for local use, not as a Vercel-hosted online
+admin panel.
 
-The manager UI is available at the deployment root `/`. Do not use `/admin`;
-that route is intentionally absent so the standalone app stays aligned with
-the original manager entrypoint. Its current write and deploy controls call
-the local Python backend through
-`my-blog-manager/public/backend_config.json`, so Vercel can host the UI, but
-online content writing still requires a reachable backend with the manager
-origin explicitly allowed by CORS, or a future GitHub API migration.
+Double-click `start-local-manager.bat` from the repository root to start the
+local manager. The launcher starts the Next.js manager UI and the local Python
+backend used by save, sync, and deploy controls. The Vercel manager project was
+removed because those controls depend on `127.0.0.1` and are not usable as a
+standalone online CMS yet.
 
 ## Attribution
 
