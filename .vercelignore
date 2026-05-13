@@ -5,6 +5,8 @@ my-blog-manager/
 
 *.log
 dev-server*.log
+.codex-logs/
+.playwright-mcp/
 __pycache__/
 *.py[cod]
 
