@@ -81,8 +81,10 @@ The original webmaster manager is kept as a separate app under
 route. Deploy it as a second Vercel project from the same GitHub repository
 with the project Root Directory set to `my-blog-manager`.
 
-The manager UI is available at `/admin` inside that deployment. Its current
-write and deploy controls call the local Python backend through
+The manager UI is available at the deployment root `/`. Do not use `/admin`;
+that route is intentionally absent so the standalone app stays aligned with
+the original manager entrypoint. Its current write and deploy controls call
+the local Python backend through
 `my-blog-manager/public/backend_config.json`, so Vercel can host the UI, but
 online content writing still requires a reachable backend with the manager
 origin explicitly allowed by CORS, or a future GitHub API migration.

@@ -50,12 +50,13 @@ Output Directory: 默认
 部署完成后，管理端入口是：
 
 ```text
-https://<manager-project>.vercel.app/admin
+https://<manager-project>.vercel.app/
 ```
 
 当前注意事项：
 
 - 主站不再拥有 `/manager`；除非未来明确做反向代理，否则主站 `/manager` 应该返回 404。
+- `/admin` 不是管理端入口，也不要在 `my-blog-manager` 里新增自写 `/admin` dashboard；管理端使用原版项目根页面。
 - `my-blog-manager` 的保存、同步、部署按钮当前通过 `public/backend_config.json` 调用本机 `127.0.0.1` 上的 Python 后端。
 - 因此 Vercel 可以托管管理页面 UI，但如果要让线上管理端直接写入 GitHub，还需要把后端放到可访问服务并允许管理端域名通过 CORS，或后续改造成 Vercel Serverless + GitHub API。
 - 当前 Python 后端 CORS 只允许 `localhost` 和 `127.0.0.1` 来源。拿到管理端 Vercel 地址后，不要直接扩大到所有 `*.vercel.app`，应只允许自己的管理端域名。

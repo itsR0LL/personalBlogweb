@@ -233,7 +233,12 @@ export default function Navbar() {
 
               <AnimatePresence>
                 {isOpBoxOpen && (
-                  <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute right-0 mt-3 w-80 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-4 z-50 cursor-default">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="fixed left-3 right-3 top-20 z-[120] max-h-[calc(100dvh-6rem)] overflow-y-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-4 cursor-default custom-scrollbar sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-3 sm:w-80 sm:max-h-none sm:overflow-visible"
+                  >
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">待处理操作</h3>
                       <button onClick={clearOperations} className="text-[10px] text-red-500 font-bold hover:underline">清空全部</button>
@@ -257,7 +262,7 @@ export default function Navbar() {
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <button onClick={handleSyncBlogClick} className="py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-black hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-1.5">
                         <RefreshCw size={14} strokeWidth={2.4} />
                         <span>同步 Blog</span>

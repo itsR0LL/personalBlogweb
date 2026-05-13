@@ -10,7 +10,7 @@ Update it before changing content ownership or deployment boundaries.
 - Stable baseline: `7a0f035 chore: baseline before anime blog polish`.
 - Public-site Vercel deployment excludes `my-blog-manager/`, local logs, `.env*`, `.next/`, and `node_modules/` through root `.vercelignore`.
 - Manager Vercel deployment must be a separate Vercel project with Root Directory set to `my-blog-manager`.
-- The root public site does not own `/manager`; the manager UI lives at `my-blog-manager/app/admin/page.tsx` and should be opened as `/admin` on the manager deployment.
+- The root public site does not own `/manager`; the manager UI is the standalone app root in `my-blog-manager/app/page.tsx` and should be opened as `/` on the manager deployment.
 - `/api/manager/*` is intentionally not part of the recovered public site.
 
 ## Public Site Content Map
@@ -81,4 +81,7 @@ site changed correctly after save, not only that the manager UI saved data.
   - `/photowall` returns 200
   - `/about` returns 200
   - Public-site `/manager` returns 404 unless a deliberate proxy route is added
-  - Manager deployment `/admin` returns 200
+  - Public-site `/admin` returns 404 unless a deliberate proxy route is added
+  - Manager deployment `/` returns 200
+  - Manager deployment `/editor`, `/drafts`, and `/settings` return 200
+  - Manager deployment `/admin` returns 404
