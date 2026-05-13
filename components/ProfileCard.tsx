@@ -16,11 +16,11 @@ export default function ProfileCard({ postCount, chatterCount, photoCount }: { p
   return (
     <div
       onClick={() => router.push('/about')}
-      className="md:col-span-7 rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-5 sm:p-6 md:p-8 flex flex-col justify-between transition-all duration-700 hover:scale-[1.01] cursor-pointer group relative overflow-hidden h-full min-h-[220px] md:min-h-[280px]"
+      className="md:col-span-7 rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-4 sm:p-6 md:p-8 flex flex-col justify-between transition-all duration-700 hover:scale-[1.01] cursor-pointer group relative overflow-hidden h-full min-h-[200px] sm:min-h-[220px] md:min-h-[280px] max-w-full"
     >
-      <div className="flex items-start justify-between relative z-10">
-        <div className="flex items-center gap-4 md:gap-6 w-full">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl md:rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 p-1 shadow-lg flex-shrink-0 transition-transform duration-500 group-hover:rotate-3">
+      <div className="flex items-start justify-between relative z-10 w-full">
+        <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full min-w-0">
+          <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl md:rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 p-1 shadow-lg flex-shrink-0 transition-transform duration-500 group-hover:rotate-3">
             <img src={siteConfig.avatarUrl} alt="avatar" className="w-full h-full rounded-lg md:rounded-xl object-cover bg-white" />
           </div>
           <div className="flex-1 min-w-0">
@@ -28,7 +28,7 @@ export default function ProfileCard({ postCount, chatterCount, photoCount }: { p
                 1. 增加了 pb-1 (padding-bottom) 给字母降部留空间
                 2. 增加了 leading-snug 确保行高不至于太扁
             */}
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 pb-1 leading-snug tracking-wider transition-colors duration-700 truncate">
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 pb-1 leading-snug tracking-wider transition-colors duration-700 truncate">
               {siteConfig.authorName}
             </h1>
             <p className="text-xs sm:text-sm md:text-base text-slate-700 dark:text-slate-300 font-medium leading-relaxed max-w-md transition-colors duration-700 line-clamp-2 md:line-clamp-none">
@@ -38,8 +38,8 @@ export default function ProfileCard({ postCount, chatterCount, photoCount }: { p
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center md:items-end justify-between mt-6 md:mt-8 gap-5 md:gap-6 relative z-10">
-        <div className="flex gap-2 sm:gap-6 w-full md:w-auto justify-between sm:justify-around md:justify-start px-2 sm:px-0">
+      <div className="flex flex-col md:flex-row items-center md:items-end justify-between mt-5 sm:mt-6 md:mt-8 gap-4 sm:gap-5 md:gap-6 relative z-10">
+        <div className="flex gap-2 sm:gap-6 w-full md:w-auto justify-between sm:justify-around md:justify-start px-0 sm:px-0">
           <StatItem count={postCount} label="文章" color="text-indigo-600 dark:text-indigo-400" />
           <div className="w-px h-8 md:h-10 bg-slate-300/50 dark:bg-slate-700 hidden md:block"></div>
           <StatItem count={chatterCount} label="杂谈" color="text-purple-600 dark:text-purple-400" />
@@ -85,7 +85,7 @@ function SocialBtn({ type, url, onClick }: { type: string, url?: string, onClick
   const content = (
     <div
       onClick={onClick}
-      className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/50 dark:bg-slate-700/50 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white transition-all duration-300 border border-white/40 dark:border-white/10 shadow-sm"
+      className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl bg-white/50 dark:bg-slate-700/50 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white transition-all duration-300 border border-white/40 dark:border-white/10 shadow-sm"
       title={type}
     >
       {getIcon()}
