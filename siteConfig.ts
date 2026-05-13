@@ -1,14 +1,14 @@
-// siteConfig.ts - central site settings
+// siteConfig.ts - 站点核心配置
 
 export const siteConfig = {
-  title: "R0L1 Studio | Personal Blog",
+  title: "R0L1 Studio | 个人博客",
   faviconUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=256&auto=format&fit=crop",
   authorName: "R0L1",
-  bio: "A solo developer's field notes on AI agents, product building, software engineering, and independent creation.",
+  bio: "记录 AI Agent、产品构建、软件工程与独立创造的个人开发笔记。",
 
   navTitle: "R0L1 Studio",
   navSuffix: "|",
-  navAfter: "Personal Blog",
+  navAfter: "个人博客",
 
   avatarUrl: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?q=80&w=400&auto=format&fit=crop",
 
@@ -37,17 +37,17 @@ export const siteConfig = {
     photos: 8,
   },
 
-  chatterTitle: "Build Notes",
-  chatterDescription: "Short notes on ideas, experiments, and daily progress",
+  chatterTitle: "构建札记",
+  chatterDescription: "记录灵感、实验和日常推进的短笔记",
 
   danmakuList: [
-    "Ship small, learn fast",
-    "Document the decision",
-    "Make the workflow visible",
-    "Test the risky path",
-    "Keep scope honest",
-    "AI agents need clear handoffs",
-    "Build notes are product memory",
+    "小步发布，快速学习",
+    "把决策写下来",
+    "让工作流可见",
+    "优先测试高风险路径",
+    "诚实控制范围",
+    "AI Agent 需要清晰交接",
+    "构建笔记就是产品记忆",
   ],
 
   buildDate: "2026-05-11T00:00:00",

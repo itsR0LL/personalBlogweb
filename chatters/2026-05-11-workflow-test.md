@@ -1,13 +1,13 @@
 ---
-title: Testing the Workflow on a Real Blog
+title: 在真实博客中测试工作流
 date: '2026-05-11 12:00:00'
 tags:
-  - Workflow
-  - Blog
-  - Build Note
+  - 工作流
+  - 博客
+  - 构建笔记
 mood: focused
 cover: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop
-description: A short note about using the AI team workflow to build this site.
+description: 一段关于使用 AI 团队工作流构建本站的短记录。
 ---
 
 Today this blog became the first real test case for the workflow.

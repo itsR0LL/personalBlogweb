@@ -1,12 +1,12 @@
 ---
-title: "Markdown Writing Guide for This Blog"
+title: "本站 Markdown 写作指南"
 date: "2026-05-11 11:00:00"
-description: "A starter guide for creating articles in the posts directory."
+description: "一份在 posts 目录中创建文章的入门指南。"
 cover: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=1600&auto=format&fit=crop"
 tags:
   - Markdown
-  - Writing
-  - Docs
+  - 写作
+  - 文档
 ---
 
 ## Article Files

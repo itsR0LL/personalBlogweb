@@ -60,7 +60,7 @@ export default function WeatherWidget() {
         <div className="flex items-center justify-between relative z-10 w-full">
           <div className="flex flex-col flex-1 pr-2">
             <span className={`text-[10px] font-black uppercase tracking-widest mb-1 ${weather.isMock ? 'text-amber-500' : 'text-indigo-500 dark:text-indigo-400'}`}>
-              {weather.isMock ? 'SIMULATED V7' : 'BEIJING V7'}
+              {weather.isMock ? '模拟气象 V7' : '北京气象 V7'}
             </span>
             <span className="text-base font-bold text-slate-800 dark:text-white line-clamp-1">{weather.city}</span>
             <div className="flex items-baseline gap-2 mt-1">

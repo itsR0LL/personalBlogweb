@@ -1,9 +1,9 @@
 ---
-title: "Designing a Solo-Developer AI Team"
+title: "设计一个独立开发者的 AI 团队"
 date: "2026-05-11 10:00:00"
-description: "A compact design note for using specialist AI roles without turning a solo project into process theater."
+description: "一份关于如何使用专家型 AI 角色，同时避免把独立项目变成流程表演的简明设计笔记。"
 cover: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=1600&auto=format&fit=crop"
-tags: ["AI Agent", "Product", "Engineering"]
+tags: ["AI Agent", "产品", "工程"]
 ---
 
 ## The Principle

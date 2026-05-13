@@ -1,9 +1,9 @@
 ---
-title: "Starting a Personal Blog with an AI Agent Workflow"
+title: "用 AI Agent 工作流启动个人博客"
 date: "2026-05-11 09:00:00"
-description: "The first note for this blog: why this site exists and how the workflow will be used."
+description: "这篇开篇笔记记录本站存在的原因，以及后续如何使用 AI 工作流推进建设。"
 cover: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop"
-tags: ["AI Agent", "Workflow", "Blog"]
+tags: ["AI Agent", "工作流", "博客"]
 ---
 
 ## Why This Blog Exists
