@@ -79,42 +79,6 @@ input[type=range]::-webkit-slider-thumb {
   }
 }
 
-@layer utilities {
-  .anime-grid-overlay {
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
-    background-size: 34px 34px;
-    mask-image: linear-gradient(to bottom, black, transparent 78%);
-  }
-
-  .anime-hero::after {
-    content: "";
-    position: absolute;
-    inset: auto 1.25rem 1.25rem auto;
-    width: 8rem;
-    height: 8rem;
-    border-radius: 9999px;
-    background: radial-gradient(circle, rgba(244, 114, 182, 0.42), transparent 68%);
-    filter: blur(10px);
-    opacity: 0.8;
-    pointer-events: none;
-  }
-
-  @media (max-width: 640px) {
-    .anime-grid-overlay {
-      background-size: 28px 28px;
-      opacity: 0.22;
-    }
-
-    .anime-hero::after {
-      width: 5rem;
-      height: 5rem;
-      inset: auto 0.75rem 0.75rem auto;
-    }
-  }
-}
-
 /* ========================================================
    5. 全局滚动条美化 (Chrome, Edge, Safari)
    ======================================================== */
