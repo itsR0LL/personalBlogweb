@@ -1,0 +1,14 @@
+# Local build output and dependencies
+.next/
+node_modules/
+
+# Local manager runtime artifacts
+.codex-logs/
+*.log
+manager-*.log
+tsconfig.tsbuildinfo
+
+# Local secrets and machine-specific files
+.env*
+__pycache__/
+*.py[cod]

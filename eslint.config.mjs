@@ -24,6 +24,9 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    ".codex-logs/**",
+    ".playwright-mcp/**",
+    "my-blog-manager/**",
     "next-env.d.ts",
   ]),
 ]);

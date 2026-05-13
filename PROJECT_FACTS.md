@@ -6,10 +6,12 @@ Update it before changing content ownership or deployment boundaries.
 ## Current Recovery State
 
 - Public site target: the repository root Next.js app.
+- Manager target: the standalone Next.js app in `my-blog-manager/`.
 - Stable baseline: `7a0f035 chore: baseline before anime blog polish`.
-- Local manager reference: `my-blog-manager/`.
-- Vercel deployment excludes `my-blog-manager/`, local logs, `.env*`, `.next/`, and `node_modules/` through `.vercelignore`.
-- `/manager` and `/api/manager/*` are intentionally not part of the recovered public site.
+- Public-site Vercel deployment excludes `my-blog-manager/`, local logs, `.env*`, `.next/`, and `node_modules/` through root `.vercelignore`.
+- Manager Vercel deployment must be a separate Vercel project with Root Directory set to `my-blog-manager`.
+- The root public site does not own `/manager`; the manager UI lives at `my-blog-manager/app/admin/page.tsx` and should be opened as `/admin` on the manager deployment.
+- `/api/manager/*` is intentionally not part of the recovered public site.
 
 ## Public Site Content Map
 
@@ -55,7 +57,10 @@ site changed correctly after save, not only that the manager UI saved data.
 
 - Do not depend on long chat memory for project structure. Read this file and the source files before edits.
 - Do not merge `my-blog-manager/` into the public root without a scoped migration plan.
-- Do not add `/manager` back until its module scope and acceptance checks are documented.
+- Do not recreate `app/manager/page.tsx` in the public root unless there is an explicit reverse-proxy or rewrite plan.
+- Keep the manager as the standalone app under `my-blog-manager/`.
+- Do not add manager write APIs back until their module scope and acceptance checks are documented.
+- Current manager write/deploy controls call the local Python backend at `127.0.0.1` using `my-blog-manager/public/backend_config.json`; Vercel can host the UI, but online write operations need the backend to run somewhere reachable and allow the manager origin through CORS, or be rebuilt as server-side GitHub API routes.
 - Do not expose secrets to the browser. Server routes must read secrets only from environment variables.
 - Do not allow arbitrary file writes. Manager writes must be allowlisted by path or pattern.
 - Every manager module needs a public-route verification checklist.
@@ -63,11 +68,17 @@ site changed correctly after save, not only that the manager UI saved data.
 ## Deployment Notes
 
 - Root app build command: `npm run build`.
-- Vercel project is bound from the repository root.
-- `my-blog-manager/` is a local/reference app and is not deployed by the root Vercel project.
+- Public Vercel project is bound from the repository root.
+- Manager Vercel project should use:
+  - Root Directory: `my-blog-manager`
+  - Build Command: `npm run build`
+  - Install Command: `npm install`
+  - Output Directory: Next.js default
+- Current local backend CORS only allows `localhost` and `127.0.0.1` origins. A deployed manager URL should not be assumed to have write access until this is deliberately configured.
 - Required online check after push:
   - `/` returns 200
   - `/timeline` returns 200
   - `/photowall` returns 200
   - `/about` returns 200
-  - `/manager` returns 404 until a new manager is deliberately rebuilt
+  - Public-site `/manager` returns 404 unless a deliberate proxy route is added
+  - Manager deployment `/admin` returns 200
