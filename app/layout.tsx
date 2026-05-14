@@ -9,7 +9,7 @@ import FloatingPlayer from "../components/FloatingPlayer";
 import { siteConfig } from "../siteConfig";
 import ClickEffect from "../components/ClickEffect";
 import BackgroundSlider from "../components/BackgroundSlider";
-import GlobalToolbox from "../components/GlobalToolbox";
+import FloatingThemePanel from "../components/FloatingThemePanel";
 import SplashScreen from "../components/SplashScreen";
 import CyberCat from '../components/CyberCat';
 import DanmakuBackground from '../components/DanmakuBackground';
@@ -103,9 +103,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <FloatingPlayer />
               </div>
 
-              <div className="hidden md:block">
-                <GlobalToolbox />
-              </div>
+              <FloatingThemePanel />
 
               {/* 隐藏手机端点击粒子 */}
               <div className="hidden md:block">

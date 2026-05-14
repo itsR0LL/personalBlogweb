@@ -9,7 +9,6 @@ import FloatingPlayer from "../components/FloatingPlayer";
 import { siteConfig } from "../siteConfig";
 import ClickEffect from "../components/ClickEffect";
 import BackgroundSlider from "../components/BackgroundSlider";
-import GlobalToolbox from "../components/GlobalToolbox";
 import SplashScreen from "../components/SplashScreen";
 import { OperationProvider } from "../context/OperationContext";
 import { ToastProvider } from '../components/ToastProvider';
@@ -95,7 +94,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   </div>
 
                   <FloatingPlayer />
-                  <GlobalToolbox />
                   <ClickEffect />
                 </div>
 

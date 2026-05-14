@@ -8,7 +8,6 @@ import PageTransition from '../components/PageTransition';
 import SearchBar from '../components/SearchBar';
 import { siteConfig } from '../siteConfig';
 import CloudPlayer from '../components/CloudPlayer';
-import ThemeToggleBlock from '../components/ThemeToggleBlock';
 import ProfileCard from '../components/ProfileCard';
 import SiteDashboard from '../components/SiteDashboard';
 import { albums } from '../data/albums';
@@ -134,14 +133,20 @@ export default function Home() {
                     </div>
                   </Link>
 
-                  {/* 底层网格：说说轮播 + 主题切换器 */}
+                  {/* 底层网格：说说轮播 + 氛围卡位 */}
                   {/* 手机上单列，平板上分3列比例分布 */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full flex-1">
                     <div className="sm:col-span-2 flex flex-col min-h-[180px] sm:min-h-[200px] min-w-0">
                       <LatestChatterCarousel chatters={top5Chatters} />
                     </div>
                     <div className="sm:col-span-1 flex flex-col min-h-[160px] sm:min-h-[120px] min-w-0">
-                      <ThemeToggleBlock />
+                      <div className="h-full w-full rounded-2xl sm:rounded-3xl bg-white/35 dark:bg-slate-800/45 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-4 sm:p-6 flex flex-col justify-center items-center text-center transition-colors duration-700">
+                        <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 dark:bg-indigo-400/10 text-indigo-500 dark:text-indigo-300 flex items-center justify-center mb-3">
+                          <span className="text-lg font-black">+</span>
+                        </div>
+                        <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-white">氛围卡位</h3>
+                        <p className="mt-1 text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400">后续扩展</p>
+                      </div>
                     </div>
                   </div>
 
