@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { Bot, Database, Download, Image as ImageIcon, MessageCircle, Monitor, Music, Palette, Puzzle, Rocket, User, Zap } from 'lucide-react';
 import { useOperations } from '../../context/OperationContext';
 import { siteConfig } from '../../siteConfig';
@@ -21,18 +21,56 @@ import FooterSection from '../../components/settings/FooterSection';
 // 👇 🌟 引入刚写的 AI 配置组件
 import AICatSection from '../../components/settings/AICatSection';
 
+type MusicDetail = {
+  id?: string | number;
+  name?: string;
+  error?: boolean;
+  [key: string]: unknown;
+};
+
+type SettingsFormData = {
+  [key: string]: unknown;
+  authorName: string;
+  bio: string;
+  avatarUrl: string;
+  social: Record<string, unknown>;
+  cloudMusicIds: Array<string | number>;
+  useGradient: boolean;
+  themeColors: string[];
+  bgImages: string[];
+  lightBgImages: string[];
+  darkBgImages: string[];
+  gitalkConfig: {
+    clientID: string;
+    clientSecret: string;
+    repo: string;
+    owner: string;
+    admin: string[];
+  };
+  danmakuList: string[];
+  buildDate: string;
+  icpConfig: unknown;
+  footerBadges: unknown[];
+  geminiConfig: Record<string, unknown>;
+  newMusicId?: string;
+};
+
 function SettingsContent() {
-  const { operations, addOperation } = useOperations();
+  const { addOperation } = useOperations();
   const [activeTab, setActiveTab] = useState('profile');
   const { showToast } = useToast();
 
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<SettingsFormData>({
     authorName: siteConfig.authorName || "",
     bio: siteConfig.bio || "",
     avatarUrl: siteConfig.avatarUrl || "",
     social: siteConfig.social || {},
     cloudMusicIds: [...(siteConfig.cloudMusicIds || [])],
+    useGradient: siteConfig.useGradient ?? false,
+    themeColors: [...(siteConfig.themeColors || [])],
     bgImages: [...(siteConfig.bgImages || [])],
+    lightBgImages: [...(siteConfig.lightBgImages || siteConfig.bgImages || [])],
+    darkBgImages: [...(siteConfig.darkBgImages || siteConfig.bgImages || [])],
     gitalkConfig: siteConfig.gitalkConfig || {
       clientID: '',
       clientSecret: '',
@@ -54,8 +92,8 @@ function SettingsContent() {
   });
 
   const [queryLoading, setQueryLoading] = useState(false);
-  const [queryResult, setQueryResult] = useState<any>(null);
-  const [musicDetails, setMusicDetails] = useState<Record<string, any>>({});
+  const [queryResult, setQueryResult] = useState<MusicDetail | null>(null);
+  const [musicDetails, setMusicDetails] = useState<Record<string, MusicDetail>>({});
 
   useEffect(() => {
     const fetchRealConfig = async () => {
@@ -67,12 +105,22 @@ function SettingsContent() {
         const data = await res.json();
 
         if (data.success && data.data) {
+          const backendBgImages = Array.isArray(data.data.bgImages) ? data.data.bgImages : undefined;
+          const backendLightBgImages = Array.isArray(data.data.lightBgImages)
+            ? data.data.lightBgImages
+            : backendBgImages;
+          const backendDarkBgImages = Array.isArray(data.data.darkBgImages) ? data.data.darkBgImages : undefined;
           console.log("✅ 成功从后端拉取到真实配置:", data.data);
-          setFormData((prev: any) => ({
+          setFormData((prev) => ({
             ...prev,
             ...data.data,
             social: { ...(prev.social || {}), ...(data.data.social || {}) },
             gitalkConfig: { ...(prev.gitalkConfig || {}), ...(data.data.gitalkConfig || {}) },
+            useGradient: typeof data.data.useGradient === 'boolean' ? data.data.useGradient : prev.useGradient,
+            themeColors: Array.isArray(data.data.themeColors) ? [...data.data.themeColors] : prev.themeColors,
+            bgImages: backendBgImages ? [...backendBgImages] : prev.bgImages,
+            lightBgImages: backendLightBgImages ? [...backendLightBgImages] : prev.lightBgImages,
+            darkBgImages: backendDarkBgImages ? [...backendDarkBgImages] : prev.darkBgImages,
             danmakuList: data.data.danmakuList ? [...data.data.danmakuList] : prev.danmakuList,
             buildDate: data.data.buildDate || prev.buildDate,
             icpConfig: data.data.icpConfig || prev.icpConfig,
@@ -93,8 +141,8 @@ function SettingsContent() {
     fetchRealConfig();
   }, []);
 
-  const handleUpdate = (field: string, value: any) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
+  const handleUpdate = (field: string, value: unknown) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const fetchMusicDetail = async (id: string) => {
@@ -104,14 +152,14 @@ function SettingsContent() {
       const res = await fetch(`http://127.0.0.1:${configData.api_port}/api/music/query/${id}`, { cache: 'no-store' });
       const data = await res.json();
       return data.success ? data.data : { error: true, id, name: "查询失败或无版权" };
-    } catch (error) {
+    } catch {
       return { error: true, id, name: "后端通信通道断开" };
     }
   };
 
   useEffect(() => {
     const loadInitialMusicDetails = async () => {
-      const details: Record<string, any> = { ...musicDetails };
+      const details: Record<string, MusicDetail> = { ...musicDetails };
       let hasUpdate = false;
       for (const id of formData.cloudMusicIds || []) {
         if (!details[id]) {
@@ -170,14 +218,20 @@ function SettingsContent() {
     }
   };
 
-  const pushToQueue = (label: string, key?: string, value?: any) => {
+  const pushToQueue = (label: string, key?: string, value?: unknown) => {
+    const payload = key
+      ? { [key]: value }
+      : value && typeof value === 'object' && !Array.isArray(value)
+        ? value
+        : formData;
+
     addOperation({
       id: Date.now().toString(),
       type: 'CONFIG',
       label: `配置暂存：${label}`,
       description: `修改了系统的 ${label}，等待同步至 my-blog`,
       timestamp: new Date().toLocaleTimeString().slice(0, 5),
-      payload: formData,
+      payload,
       key: key,
       value: value
     });

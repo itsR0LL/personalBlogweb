@@ -1,38 +1,87 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { siteConfig } from '../siteConfig';
+
+import { useEffect, useMemo, useState } from "react";
+import { siteConfig } from "../siteConfig";
+import { useTheme } from "./ThemeProvider";
+
+const randomDelay = () => 9000 + Math.floor(Math.random() * 5000);
+
+const normalizeImages = (images?: string[]) =>
+  Array.isArray(images) ? images.filter(Boolean) : [];
 
 export default function BackgroundSlider() {
+  const { isDark } = useTheme();
+  const fallbackImages = useMemo(() => normalizeImages(siteConfig.bgImages), []);
+  const lightImages = useMemo(
+    () => normalizeImages(siteConfig.lightBgImages || siteConfig.bgImages),
+    []
+  );
+  const darkImages = useMemo(
+    () => normalizeImages(siteConfig.darkBgImages || siteConfig.bgImages),
+    []
+  );
+  const activeImages = isDark ? darkImages : lightImages;
+  const inactiveImages = isDark ? lightImages : darkImages;
   const [index, setIndex] = useState(0);
-  const images = siteConfig.bgImages;
+
+  const imageCount = activeImages.length || fallbackImages.length;
+  const safeIndex = imageCount > 0 ? index % imageCount : 0;
 
   useEffect(() => {
-    if (images.length <= 1) return;
+    if (imageCount <= 1) return;
 
-    const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % images.length);
-    }, 10000); // 10秒切换一次
+    const timer = window.setTimeout(() => {
+      setIndex((current) => (current + 1) % imageCount);
+    }, randomDelay());
 
-    return () => clearInterval(timer);
-  }, [images.length]);
+    return () => window.clearTimeout(timer);
+  }, [safeIndex, imageCount, isDark]);
+
+  useEffect(() => {
+    const urls = [
+      activeImages[safeIndex],
+      activeImages[(safeIndex + 1) % Math.max(activeImages.length, 1)],
+      inactiveImages[safeIndex % Math.max(inactiveImages.length, 1)],
+    ].filter(Boolean);
+
+    urls.forEach((url) => {
+      const img = new window.Image();
+      img.src = url;
+    });
+  }, [activeImages, inactiveImages, safeIndex]);
+
+  const renderGroup = (images: string[], group: "light" | "dark") =>
+    images.map((img, i) => {
+      const groupIsActive = group === (isDark ? "dark" : "light");
+      const isCurrent = groupIsActive && i === safeIndex % images.length;
+      const isNearCurrent =
+        isCurrent ||
+        Math.abs(i - safeIndex) <= 1 ||
+        (safeIndex === 0 && i === images.length - 1) ||
+        (safeIndex === images.length - 1 && i === 0);
+
+      return (
+        <div
+          key={`${group}-${img}`}
+          data-background-slide={`${group}-${i + 1}`}
+          data-background-active={isCurrent ? "true" : "false"}
+          className="absolute inset-0 transition-opacity duration-[2400ms] ease-in-out transform-gpu"
+          style={{
+            backgroundImage: `url(${img})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: isCurrent ? 1 : 0,
+            visibility: isNearCurrent ? "visible" : "hidden",
+            willChange: "opacity",
+          }}
+        />
+      );
+    });
 
   return (
     <div className="absolute inset-0 z-[-10] overflow-hidden">
-      {images.map((img, i) => (
-        <div
-          key={img}
-          className="absolute inset-0 transition-opacity duration-[2000ms] ease-in-out transform-gpu"
-          style={{
-            backgroundImage: `url(${img})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            // 当前显示的图片 opacity 为 1，其他的为 0
-            opacity: i === index ? 1 : 0,
-            // 解决层级重叠导致的渲染压力
-            visibility: Math.abs(i - index) <= 1 || (i === images.length - 1 && index === 0) ? 'visible' : 'hidden'
-          }}
-        />
-      ))}
+      {renderGroup(lightImages, "light")}
+      {renderGroup(darkImages, "dark")}
     </div>
   );
 }

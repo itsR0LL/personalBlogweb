@@ -10,6 +10,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_API_DIR, "..", ".."))
 
 # 需要镜像覆盖的文件夹 (先清空目标，再全量复制)
 SYNC_DIRS = ["posts", "chatters", "moments"]
+SYNC_PUBLIC_DIRS = ["images/backgrounds"]
 # 需要精确覆盖的单文件
 SYNC_FILES = [
     "app/about/about.md",
@@ -71,6 +72,17 @@ async def execute_sync(request: Request):
             if os.path.exists(src_dir):
                 if os.path.exists(dst_dir):
                     shutil.rmtree(dst_dir)
+                shutil.copytree(src_dir, dst_dir)
+
+        # 1.5. Sync managed public assets required by runtime background config.
+        for d in SYNC_PUBLIC_DIRS:
+            src_dir = os.path.join(PROJECT_ROOT, "public", d.replace("/", os.sep))
+            dst_dir = os.path.join(target_path, "public", d.replace("/", os.sep))
+
+            if os.path.exists(src_dir):
+                if os.path.exists(dst_dir):
+                    shutil.rmtree(dst_dir)
+                os.makedirs(os.path.dirname(dst_dir), exist_ok=True)
                 shutil.copytree(src_dir, dst_dir)
 
         # 2. 同步单个文件 (直接覆盖或过滤)

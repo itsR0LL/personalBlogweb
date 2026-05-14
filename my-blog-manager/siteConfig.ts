@@ -12,12 +12,31 @@ export const siteConfig = {
 
   avatarUrl: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?q=80&w=400&auto=format&fit=crop",
 
-  useGradient: true,
+  useGradient: false,
   themeColors: ["#e2e8f0", "#bfdbfe", "#bbf7d0", "#fde68a"],
   bgImages: [
-    "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1600&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1600&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop",
+    "/images/backgrounds/light-1.png",
+    "/images/backgrounds/light-2.jpg",
+    "/images/backgrounds/light-3.jpg",
+    "/images/backgrounds/light-4.webp",
+    "/images/backgrounds/light-5.jpg",
+    "/images/backgrounds/light-6.jpg",
+  ],
+  lightBgImages: [
+    "/images/backgrounds/light-1.png",
+    "/images/backgrounds/light-2.jpg",
+    "/images/backgrounds/light-3.jpg",
+    "/images/backgrounds/light-4.webp",
+    "/images/backgrounds/light-5.jpg",
+    "/images/backgrounds/light-6.jpg",
+  ],
+  darkBgImages: [
+    "/images/backgrounds/dark-1.jpg",
+    "/images/backgrounds/dark-2.jpg",
+    "/images/backgrounds/dark-3.png",
+    "/images/backgrounds/dark-4.jpg",
+    "/images/backgrounds/dark-5.webp",
+    "/images/backgrounds/dark-6.jpg",
   ],
 
   defaultPostCover: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop",
