@@ -27,10 +27,12 @@ interface PicBedImage {
   key?: string;
   name: string;
   url: string;
+  originalUrl?: string;
   thumbnailUrl?: string;
   width?: number;
   height?: number;
   date?: string;
+  directUrlAvailable?: boolean;
 }
 
 interface SiteConfigWithPicBed {
@@ -64,6 +66,7 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
   const [libraryImages, setLibraryImages] = useState<PicBedImage[]>([]);
   const [libraryMessage, setLibraryMessage] = useState("");
   const [uploadedUrl, setUploadedUrl] = useState("");
+  const [selectedImage, setSelectedImage] = useState<PicBedImage | null>(null);
   const [externalUrl, setExternalUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -90,8 +93,9 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
       const data = await res.json();
 
       if (data.success) {
-        setLibraryImages(Array.isArray(data.images) ? data.images : []);
-        setLibraryMessage(data.images?.length ? "" : "当前图床账号暂无图片");
+        const images = Array.isArray(data.images) ? data.images : [];
+        setLibraryImages(images);
+        setLibraryMessage(images.length ? "" : "当前图床账号暂无图片");
       } else {
         setLibraryImages([]);
         setLibraryMessage(data.message || "图库读取失败");
@@ -108,15 +112,26 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
     if (!isOpen) return;
     setActiveTab("library");
     setUploadedUrl("");
+    setSelectedImage(null);
     setExternalUrl("");
     loadLibrary();
   }, [isOpen]);
+
+  const selectImage = (image: PicBedImage) => {
+    setUploadedUrl(image.url);
+    setSelectedImage(image);
+  };
 
   const handleFileUpload = async (file: File) => {
     const { url, token } = getPicBedConfig();
 
     if (!url || !token) {
       showToast("请先配置图床 API 地址和 Token", "error");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      showToast("只能上传图片文件", "warning");
       return;
     }
 
@@ -138,8 +153,17 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
       const data = await res.json();
 
       if (data.success && data.url) {
+        const image = {
+          key: data.originalUrl || data.url,
+          name: file.name,
+          url: data.url,
+          originalUrl: data.originalUrl,
+          thumbnailUrl: data.thumbnailUrl,
+          directUrlAvailable: data.directUrlAvailable,
+        };
         setUploadedUrl(data.url);
-        showToast("上传成功", "success");
+        setSelectedImage(image);
+        showToast(data.directUrlAvailable === false ? "上传成功，原始直链不可访问，已使用可访问预览图" : "上传成功", "success");
         loadLibrary();
       } else {
         showToast(`上传失败：${data.message || "未知错误"}`, "error");
@@ -172,6 +196,7 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
     }
 
     setUploadedUrl(nextUrl);
+    setSelectedImage(null);
     showToast("预览已生成", "success");
   };
 
@@ -183,6 +208,7 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
 
   const resetSelection = () => {
     setUploadedUrl("");
+    setSelectedImage(null);
     setExternalUrl("");
   };
 
@@ -219,6 +245,7 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
             <button
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-white/60 dark:bg-slate-700/60 flex items-center justify-center text-slate-500 hover:bg-red-500 hover:text-white transition-all cursor-pointer shadow-sm"
+              aria-label="关闭图床工作台"
             >
               <X size={16} strokeWidth={2.4} />
             </button>
@@ -261,17 +288,23 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
                       </button>
                     </div>
 
+                    {libraryImages.some((image) => image.directUrlAvailable === false) && (
+                      <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                        部分 Lsky 原始直链返回 404，已自动改用可访问的缩略图链接。
+                      </div>
+                    )}
+
                     {isLoadingLibrary ? (
                       <div className="h-44 flex flex-col items-center justify-center gap-3 text-slate-500">
                         <Loader2 size={30} className="animate-spin text-emerald-500" />
                         <p className="text-xs font-bold">正在读取图库...</p>
                       </div>
                     ) : libraryImages.length > 0 ? (
-                      <div className="grid grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-1">
+                      <div className="grid grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
                         {libraryImages.map((image) => (
                           <button
                             key={image.key || image.url}
-                            onClick={() => setUploadedUrl(image.url)}
+                            onClick={() => selectImage(image)}
                             className="group relative aspect-square rounded-2xl overflow-hidden bg-white/60 dark:bg-slate-800/60 border border-white/50 dark:border-slate-700/60 shadow-sm"
                             title={image.name}
                           >
@@ -362,6 +395,13 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
                     重新选择
                   </button>
                 </div>
+
+                {selectedImage?.directUrlAvailable === false && (
+                  <p className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                    原始直链不可访问，当前将写入可访问的缩略图链接。
+                  </p>
+                )}
+
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={copyUrlToClipboard}

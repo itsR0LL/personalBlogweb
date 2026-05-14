@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 
+const VERCEL_CHAT_URL = 'https://personalblogweb.vercel.app/api/chat';
+
 export default function CyberCat() {
   const [isPetted, setIsPetted] = useState(false);
   const [speech, setSpeech] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export default function CyberCat() {
     speak("我来快速检查当前管理任务。", 6000);
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch(VERCEL_CHAT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: "请用一句话给出当前博客管理工作的提醒。" }),
@@ -52,7 +54,7 @@ export default function CyberCat() {
 
       const data = await res.json();
       speak(data.reply, 8000);
-    } catch (error) {
+    } catch {
       speak("助手服务暂时不可用，请稍后再试。", 4000);
     } finally {
       setIsThinking(false);
@@ -71,7 +73,7 @@ export default function CyberCat() {
     speak("正在思考...", 10000);
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch(VERCEL_CHAT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage }),
@@ -81,7 +83,7 @@ export default function CyberCat() {
 
       const data = await res.json();
       speak(data.reply, 8000);
-    } catch (error) {
+    } catch {
       speak("网络或接口暂时不可用。", 4000);
     } finally {
       setIsThinking(false);

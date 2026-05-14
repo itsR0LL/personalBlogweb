@@ -6,7 +6,26 @@ import { CloudUpload, Compass } from 'lucide-react';
 // 🌟 引入你的图床工具组件 (请根据你实际的文件夹层级调整相对路径，比如 ../editor/FloatingImageTool)
 import FloatingImageTool from '../editor/FloatingImageTool';
 
-export default function ProfileSection({ formData, handleUpdate, pushToQueue }: any) {
+type ProfileFormData = {
+  [key: string]: unknown;
+  title?: string;
+  faviconUrl?: string;
+  authorName?: string;
+  bio?: string;
+  avatarUrl?: string;
+  navTitle?: string;
+  navSuffix?: string;
+  navAfter?: string;
+  social?: Record<string, string>;
+};
+
+type ProfileSectionProps = {
+  formData?: ProfileFormData;
+  handleUpdate: (field: string, value: unknown) => void;
+  pushToQueue: (label: string, key?: string, value?: unknown) => void;
+};
+
+export default function ProfileSection({ formData, handleUpdate, pushToQueue }: ProfileSectionProps) {
   // 🌟 终极防崩溃兜底
   const safeData = formData || {};
   const safeSocial = safeData.social || {};
@@ -40,7 +59,17 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
 
   // 🌟🌟🌟 核心破局点：化繁为简！
   const handleSaveAll = () => {
-    pushToQueue('全量更新个人名片');
+    pushToQueue('个人名片设置', undefined, {
+      title: safeData.title || '',
+      faviconUrl: safeData.faviconUrl || '',
+      authorName: safeData.authorName || '',
+      bio: safeData.bio || '',
+      avatarUrl: safeData.avatarUrl || '',
+      navTitle: safeData.navTitle || '',
+      navSuffix: safeData.navSuffix || '',
+      navAfter: safeData.navAfter || '',
+      social: safeSocial,
+    });
   };
 
   return (

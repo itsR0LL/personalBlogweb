@@ -89,7 +89,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <MusicProvider>
                 <div id="app-mount-root" className="flex-1 flex flex-col transition-opacity duration-1000">
                   <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
-                    {!siteConfig.useGradient && <BackgroundSlider />}
+                    <BackgroundSlider />
                     <div
                       className="absolute inset-0 z-[-9] opacity-100 dark:opacity-0 transition-opacity duration-1000"
                       style={{
@@ -110,7 +110,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                       style={{
                         background: `linear-gradient(-45deg, ${siteConfig.themeColors.join(', ')})`,
                         backgroundSize: '400% 400%',
-                        opacity: siteConfig.useGradient ? gradientIntensity : gradientIntensity * 0.45,
+                        opacity: siteConfig.useGradient ? gradientIntensity : Math.min(0.24, gradientIntensity * 0.35),
                         animation: 'gradientMove 15s ease infinite'
                       }}
                     ></div>

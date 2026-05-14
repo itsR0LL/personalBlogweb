@@ -23,17 +23,52 @@ def build_auth_headers(token: str) -> dict:
     }
 
 
-def map_lsky_image(item: dict) -> dict:
+async def image_url_works(client: httpx.AsyncClient, url: str) -> bool:
+    if not url:
+        return False
+
+    try:
+        response = await client.head(url, follow_redirects=True)
+        content_type = response.headers.get("content-type", "")
+        if 200 <= response.status_code < 400 and content_type.startswith("image/"):
+            return True
+    except httpx.RequestError:
+        pass
+
+    try:
+        response = await client.get(url, headers={"Range": "bytes=0-0"}, follow_redirects=True)
+        content_type = response.headers.get("content-type", "")
+        return 200 <= response.status_code < 400 and content_type.startswith("image/")
+    except httpx.RequestError:
+        return False
+
+
+async def resolve_image_url(client: httpx.AsyncClient, direct_url: str, thumbnail_url: str = "") -> str:
+    """Prefer the original direct link, but fall back when Lsky returns a broken short URL."""
+    if await image_url_works(client, direct_url):
+        return direct_url
+    if thumbnail_url and await image_url_works(client, thumbnail_url):
+        return thumbnail_url
+    return direct_url or thumbnail_url
+
+
+async def map_lsky_image(client: httpx.AsyncClient, item: dict) -> dict:
     links = item.get("links", {}) if isinstance(item, dict) else {}
+    direct_url = links.get("url") or ""
+    thumbnail_url = links.get("thumbnail_url") or ""
+    display_url = await resolve_image_url(client, direct_url, thumbnail_url)
+
     return {
         "key": item.get("key") or item.get("id") or item.get("pathname"),
         "name": item.get("origin_name") or item.get("name") or "untitled",
-        "url": links.get("url"),
-        "thumbnailUrl": links.get("thumbnail_url") or links.get("url"),
+        "url": display_url,
+        "originalUrl": direct_url,
+        "thumbnailUrl": thumbnail_url or display_url,
         "size": item.get("size"),
         "width": item.get("width"),
         "height": item.get("height"),
         "date": item.get("date") or item.get("human_date"),
+        "directUrlAvailable": display_url == direct_url,
     }
 
 
@@ -55,7 +90,7 @@ async def test_picbed_connection(payload: dict = Body(...)):
         if response.status_code != 200:
             return {
                 "success": False,
-                "message": f"校验失败，图床返回了 {response.status_code} 错误",
+                "message": f"校验失败：图床返回了 {response.status_code} 错误",
             }
 
         try:
@@ -74,10 +109,10 @@ async def test_picbed_connection(payload: dict = Body(...)):
         return {"success": False, "message": f"Token 无效：{data.get('message', '未知错误')}"}
     except httpx.TimeoutException:
         return {"success": False, "message": "网络超时：请检查图床地址是否可访问"}
-    except httpx.RequestError as e:
-        return {"success": False, "message": f"网络异常：{type(e).__name__}"}
-    except Exception as e:
-        return {"success": False, "message": f"服务端异常：{type(e).__name__}"}
+    except httpx.RequestError as exc:
+        return {"success": False, "message": f"网络异常：{type(exc).__name__}"}
+    except Exception as exc:
+        return {"success": False, "message": f"服务端异常：{type(exc).__name__}"}
 
 
 @router.post("/images")
@@ -101,50 +136,55 @@ async def list_images(payload: dict = Body(...)):
         async with httpx.AsyncClient(timeout=12.0, follow_redirects=True, trust_env=False) as client:
             response = await client.get(list_endpoint, headers=headers, params={"page": page})
 
-        if response.status_code != 200:
+            if response.status_code != 200:
+                return {
+                    "success": False,
+                    "message": f"图库读取失败：图床返回了 {response.status_code} 错误",
+                    "images": [],
+                }
+
+            try:
+                data = response.json()
+            except ValueError:
+                content_type = response.headers.get("content-type", "未知类型")
+                return {
+                    "success": False,
+                    "message": f"图库读取失败：图床返回的不是 JSON。返回类型：{content_type}",
+                    "images": [],
+                }
+
+            if data.get("status") is not True:
+                return {
+                    "success": False,
+                    "message": f"图库读取失败：{data.get('message', '未知错误')}",
+                    "images": [],
+                }
+
+            payload_data = data.get("data", {})
+            raw_images = payload_data.get("data", []) if isinstance(payload_data, dict) else []
+            images = []
+
+            for item in raw_images:
+                image = await map_lsky_image(client, item)
+                if image.get("url"):
+                    images.append(image)
+
             return {
-                "success": False,
-                "message": f"图库读取失败，图床返回了 {response.status_code} 错误",
-                "images": [],
+                "success": True,
+                "message": "图库读取成功",
+                "images": images,
+                "pagination": {
+                    "currentPage": payload_data.get("current_page", page),
+                    "lastPage": payload_data.get("last_page", page),
+                    "total": payload_data.get("total", len(images)),
+                },
             }
-
-        try:
-            data = response.json()
-        except ValueError:
-            content_type = response.headers.get("content-type", "未知类型")
-            return {
-                "success": False,
-                "message": f"图库读取失败，图床返回的不是 JSON。返回类型：{content_type}",
-                "images": [],
-            }
-
-        if data.get("status") is not True:
-            return {
-                "success": False,
-                "message": f"图库读取失败：{data.get('message', '未知错误')}",
-                "images": [],
-            }
-
-        payload_data = data.get("data", {})
-        raw_images = payload_data.get("data", []) if isinstance(payload_data, dict) else []
-        images = [image for image in (map_lsky_image(item) for item in raw_images) if image.get("url")]
-
-        return {
-            "success": True,
-            "message": "图库读取成功",
-            "images": images,
-            "pagination": {
-                "currentPage": payload_data.get("current_page", page),
-                "lastPage": payload_data.get("last_page", page),
-                "total": payload_data.get("total", len(images)),
-            },
-        }
     except httpx.TimeoutException:
         return {"success": False, "message": "图库读取超时：请检查图床网络", "images": []}
-    except httpx.RequestError as e:
-        return {"success": False, "message": f"网络异常：{type(e).__name__}", "images": []}
-    except Exception as e:
-        return {"success": False, "message": f"服务端异常：{type(e).__name__}", "images": []}
+    except httpx.RequestError as exc:
+        return {"success": False, "message": f"网络异常：{type(exc).__name__}", "images": []}
+    except Exception as exc:
+        return {"success": False, "message": f"服务端异常：{type(exc).__name__}", "images": []}
 
 
 @router.post("/upload")
@@ -169,28 +209,40 @@ async def upload_image(
         async with httpx.AsyncClient(timeout=30.0, follow_redirects=True, trust_env=False) as client:
             response = await client.post(upload_endpoint, headers=headers, files=files)
 
-        if response.status_code != 200:
-            return {"success": False, "message": f"上传失败，图床返回了 {response.status_code} 错误"}
+            if response.status_code != 200:
+                return {"success": False, "message": f"上传失败：图床返回了 {response.status_code} 错误"}
 
-        try:
-            data = response.json()
-        except ValueError:
-            content_type = response.headers.get("content-type", "未知类型")
-            return {
-                "success": False,
-                "message": f"上传失败，图床返回的不是 JSON。返回类型：{content_type}",
-            }
+            try:
+                data = response.json()
+            except ValueError:
+                content_type = response.headers.get("content-type", "未知类型")
+                return {
+                    "success": False,
+                    "message": f"上传失败：图床返回的不是 JSON。返回类型：{content_type}",
+                }
 
-        if data.get("status") is True:
-            img_url = data.get("data", {}).get("links", {}).get("url")
-            if not img_url:
-                return {"success": False, "message": "上传成功但未找到图片直链"}
-            return {"success": True, "message": "上传成功", "url": img_url}
+            if data.get("status") is True:
+                links = data.get("data", {}).get("links", {})
+                direct_url = links.get("url") or ""
+                thumbnail_url = links.get("thumbnail_url") or ""
+                img_url = await resolve_image_url(client, direct_url, thumbnail_url)
 
-        return {"success": False, "message": f"图床拒绝接收：{data.get('message', '未知错误')}"}
+                if not img_url:
+                    return {"success": False, "message": "上传成功但未找到图片直链"}
+
+                return {
+                    "success": True,
+                    "message": "上传成功",
+                    "url": img_url,
+                    "originalUrl": direct_url,
+                    "thumbnailUrl": thumbnail_url or img_url,
+                    "directUrlAvailable": img_url == direct_url,
+                }
+
+            return {"success": False, "message": f"图床拒绝接收：{data.get('message', '未知错误')}"}
     except httpx.TimeoutException:
         return {"success": False, "message": "图片上传超时，请检查网络或图片是否过大"}
-    except httpx.RequestError as e:
-        return {"success": False, "message": f"网络异常：{type(e).__name__}"}
-    except Exception as e:
-        return {"success": False, "message": f"服务端异常：{type(e).__name__}"}
+    except httpx.RequestError as exc:
+        return {"success": False, "message": f"网络异常：{type(exc).__name__}"}
+    except Exception as exc:
+        return {"success": False, "message": f"服务端异常：{type(exc).__name__}"}

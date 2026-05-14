@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type DragEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   CheckCircle2,
@@ -61,14 +61,14 @@ const DEFAULT_BACKGROUND_VISUALS = {
 };
 
 const sliderConfigs: SliderConfig[] = [
-  { key: 'backgroundBlurPx', label: '背景模糊', min: 0, max: 16, step: 1, suffix: 'px', help: '数值越低，图片越清晰。' },
-  { key: 'backgroundOverlayLight', label: 'Light 遮罩', min: 0, max: 0.6, step: 0.01, suffix: '', help: '控制浅色模式的白色雾面。' },
-  { key: 'backgroundOverlayDark', label: 'Dark 遮罩', min: 0, max: 0.7, step: 0.01, suffix: '', help: '控制深色模式的暗色压层。' },
-  { key: 'gradientIntensity', label: '渐变深度', min: 0, max: 1, step: 0.01, suffix: '', help: '控制渐变颜色参与背景的强度。' },
-  { key: 'gradientGlowBlurPx', label: '光晕柔化', min: 40, max: 140, step: 1, suffix: 'px', help: '控制背景光晕扩散范围。' },
+  { key: 'backgroundBlurPx', label: '背景模糊', min: 0, max: 16, step: 1, suffix: 'px', help: '数值越低，背景图片越清晰。' },
+  { key: 'backgroundOverlayLight', label: 'Light 遮罩', min: 0, max: 0.6, step: 0.01, suffix: '', help: '浅色模式白色雾面强度。' },
+  { key: 'backgroundOverlayDark', label: 'Dark 遮罩', min: 0, max: 0.7, step: 0.01, suffix: '', help: '深色模式暗色压层强度。' },
+  { key: 'gradientIntensity', label: '渐变深度', min: 0, max: 1, step: 0.01, suffix: '', help: '渐变色叠加在图片上的透明度。' },
+  { key: 'gradientGlowBlurPx', label: '光晕柔化', min: 40, max: 140, step: 1, suffix: 'px', help: '背景光晕的扩散范围。' },
 ];
 
-const getImageList = (value: unknown) =>
+const getStringList = (value: unknown) =>
   Array.isArray(value)
     ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
     : [];
@@ -91,12 +91,12 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
   const [newGradientColor, setNewGradientColor] = useState('#ffffff');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const lightImages = getImageList(
+  const lightImages = getStringList(
     formData.lightBgImages?.length ? formData.lightBgImages : formData.bgImages
   );
-  const darkImages = getImageList(formData.darkBgImages);
+  const darkImages = getStringList(formData.darkBgImages);
   const currentImages = activeTheme === 'light' ? lightImages : darkImages;
-  const gradientColors = getImageList(formData.themeColors);
+  const gradientColors = getStringList(formData.themeColors);
   const isGradientMode = Boolean(formData.useGradient);
 
   const backgroundVisuals = {
@@ -220,7 +220,8 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
 
       const data = await res.json();
       if (data.success && data.url) {
-        showToast('上传完成，请确认是否加入当前主题组', 'success');
+        const fallbackMessage = data.directUrlAvailable === false ? '直链不可用，已自动使用可访问预览图。' : '';
+        showToast(`上传完成。${fallbackMessage}请确认是否加入当前主题组`, 'success');
         setPendingImageUrl(data.url);
       } else {
         showToast(`上传失败：${data.message || '未知错误'}`, 'error');
@@ -247,7 +248,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
   };
 
   const saveBackgroundConfig = () => {
-    pushToQueue('视觉背景配置', undefined, {
+    pushToQueue('视觉背景配置（需点击右上角更新本地后生效）', undefined, {
       useGradient: isGradientMode,
       themeColors: gradientColors,
       bgImages: lightImages,
@@ -257,21 +258,21 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
     });
   };
 
-  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
+  const onDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
     setIsDragging(true);
   };
 
-  const onDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
+  const onDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
     setIsDragging(false);
   };
 
-  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
+  const onDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileUpload(e.dataTransfer.files[0]);
+    if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+      handleFileUpload(event.dataTransfer.files[0]);
     }
   };
 
@@ -291,6 +292,9 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
           <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase">
             Light {lightImages.length} 张 / Dark {darkImages.length} 张 / 渐变 {gradientColors.length} 色
           </p>
+          <p className="mt-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+            图片始终作为底层背景；渐变开关只控制色彩叠加，不会再把图片背景卸载掉。
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -304,7 +308,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
                   : 'text-slate-500 dark:text-slate-300 hover:bg-white/60 dark:hover:bg-slate-700/70'
               }`}
             >
-              图片背景
+              轻量图片背景
             </button>
             <button
               type="button"
@@ -315,7 +319,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
                   : 'text-slate-500 dark:text-slate-300 hover:bg-white/60 dark:hover:bg-slate-700/70'
               }`}
             >
-              渐变背景
+              图片 + 渐变叠加
             </button>
           </div>
 
@@ -324,162 +328,162 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
             onClick={saveBackgroundConfig}
             className="px-6 py-2.5 bg-indigo-500 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
           >
-            暂存背景修改
+            加入待保存队列
           </button>
         </div>
       </header>
 
       <div className="relative z-10 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-6">
         <div className="min-w-0 flex flex-col gap-6">
-          {isGradientMode ? (
-            <div className="rounded-3xl border border-white/40 dark:border-slate-700/50 bg-white/45 dark:bg-slate-800/45 p-5 md:p-6">
-              <div className="flex items-center gap-2 mb-5">
-                <Palette size={18} strokeWidth={2.4} className="text-indigo-500" />
-                <div>
-                  <p className="text-sm font-black text-slate-700 dark:text-slate-100">渐变颜色</p>
-                  <p className="text-[10px] font-bold text-slate-400">运行时会使用这些颜色生成流动渐变背景。</p>
-                </div>
-              </div>
-
-              <div
-                className="h-28 rounded-3xl border border-white/50 dark:border-slate-700/50 shadow-inner mb-5"
-                style={{
-                  background: `linear-gradient(135deg, ${gradientColors.join(', ')})`,
-                  opacity: backgroundVisuals.gradientIntensity,
-                }}
-              />
-
-              <div className="space-y-3">
-                {gradientColors.map((color, index) => (
-                  <div
-                    key={`${color}-${index}`}
-                    className="flex items-center gap-3 rounded-2xl bg-white/55 dark:bg-slate-900/45 border border-white/50 dark:border-slate-700/50 px-3 py-3"
-                  >
-                    <input
-                      type="color"
-                      value={isHexColor(color) ? color : '#ffffff'}
-                      onChange={(e) => updateGradientColor(index, e.target.value)}
-                      className="h-10 w-12 shrink-0 rounded-xl border-none bg-transparent cursor-pointer"
-                      aria-label={`编辑第 ${index + 1} 个渐变颜色`}
-                    />
-                    <input
-                      type="text"
-                      value={color}
-                      onChange={(e) => updateGradientColor(index, e.target.value)}
-                      className="min-w-0 flex-1 bg-white dark:bg-slate-950 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-100 outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeGradientColor(index)}
-                      className="h-9 w-9 shrink-0 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center"
-                      aria-label="删除渐变颜色"
-                    >
-                      <Trash2 size={16} strokeWidth={2.4} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 flex gap-2">
-                <input
-                  type="color"
-                  value={isHexColor(newGradientColor) ? newGradientColor : '#ffffff'}
-                  onChange={(e) => setNewGradientColor(e.target.value)}
-                  className="h-11 w-14 shrink-0 rounded-xl border-none bg-transparent cursor-pointer"
-                  aria-label="选择新渐变颜色"
-                />
-                <input
-                  type="text"
-                  value={newGradientColor}
-                  onChange={(e) => setNewGradientColor(e.target.value)}
-                  placeholder="#8b5cf6"
-                  className="min-w-0 flex-1 bg-white dark:bg-slate-950 rounded-xl px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-100 outline-none"
-                />
+          <div className="rounded-3xl border border-white/40 dark:border-slate-700/50 bg-slate-100/45 dark:bg-slate-800/45 p-5 md:p-6 min-w-0">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-5">
+              <div className="flex rounded-2xl bg-white/70 dark:bg-slate-900/60 p-1 border border-white/60 dark:border-slate-700/60">
                 <button
                   type="button"
-                  onClick={addGradientColor}
-                  className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center gap-1.5"
+                  onClick={() => setActiveTheme('light')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+                    activeTheme === 'light'
+                      ? 'bg-white text-slate-800 shadow-sm'
+                      : 'text-slate-500 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/80'
+                  }`}
                 >
-                  <Plus size={14} strokeWidth={2.6} />
-                  添加
+                  <Sun size={14} strokeWidth={2.4} />
+                  Light
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTheme('dark')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+                    activeTheme === 'dark'
+                      ? 'bg-slate-900 text-white shadow-sm'
+                      : 'text-slate-500 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/80'
+                  }`}
+                >
+                  <Moon size={14} strokeWidth={2.4} />
+                  Dark
                 </button>
               </div>
+              <span className="text-[10px] font-black text-slate-400 uppercase">
+                当前组：{currentImages.length} 张，新增图片会向下滚动排列
+              </span>
             </div>
-          ) : (
-            <div className="rounded-3xl border border-white/40 dark:border-slate-700/50 bg-slate-100/45 dark:bg-slate-800/45 p-5 md:p-6 min-w-0">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-5">
-                <div className="flex rounded-2xl bg-white/70 dark:bg-slate-900/60 p-1 border border-white/60 dark:border-slate-700/60">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[520px] overflow-y-auto pr-1 custom-scrollbar">
+              <AnimatePresence mode="popLayout">
+                {currentImages.map((url, index) => (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.94 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.94 }}
+                    key={`${activeTheme}-${url}-${index}`}
+                    className="relative group rounded-2xl overflow-hidden aspect-video shadow-md border border-white/30 bg-slate-200 dark:bg-slate-900"
+                  >
+                    <img
+                      src={url}
+                      alt={`${activeTheme}-background-${index + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-black text-white backdrop-blur-sm">
+                      {activeTheme === 'light' ? 'Light' : 'Dark'} {index + 1}
+                    </div>
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                      <button
+                        type="button"
+                        onClick={() => removeBg(index)}
+                        className="w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center font-bold shadow-xl hover:bg-red-600 scale-0 group-hover:scale-100 transition-transform"
+                        aria-label="删除背景图"
+                      >
+                        <X size={20} strokeWidth={2.6} />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {currentImages.length === 0 && (
+                <div className="w-full h-36 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl text-slate-400 text-xs font-bold">
+                  当前主题组还没有背景图。
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-white/40 dark:border-slate-700/50 bg-white/45 dark:bg-slate-800/45 p-5 md:p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <Palette size={18} strokeWidth={2.4} className="text-indigo-500" />
+              <div>
+                <p className="text-sm font-black text-slate-700 dark:text-slate-100">渐变叠加颜色</p>
+                <p className="text-[10px] font-bold text-slate-400">
+                  这些颜色会以透明层叠在图片上，强度由右侧“渐变深度”控制。
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="h-24 rounded-3xl border border-white/50 dark:border-slate-700/50 shadow-inner mb-5"
+              style={{
+                background: `linear-gradient(135deg, ${gradientColors.join(', ')})`,
+                opacity: backgroundVisuals.gradientIntensity,
+              }}
+            />
+
+            <div className="space-y-3">
+              {gradientColors.map((color, index) => (
+                <div
+                  key={`${color}-${index}`}
+                  className="flex items-center gap-3 rounded-2xl bg-white/55 dark:bg-slate-900/45 border border-white/50 dark:border-slate-700/50 px-3 py-3"
+                >
+                  <input
+                    type="color"
+                    value={isHexColor(color) ? color : '#ffffff'}
+                    onChange={(event) => updateGradientColor(index, event.target.value)}
+                    className="h-10 w-12 shrink-0 rounded-xl border-none bg-transparent cursor-pointer"
+                    aria-label={`编辑第 ${index + 1} 个渐变颜色`}
+                  />
+                  <input
+                    type="text"
+                    value={color}
+                    onChange={(event) => updateGradientColor(index, event.target.value)}
+                    className="min-w-0 flex-1 bg-white dark:bg-slate-950 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-100 outline-none"
+                  />
                   <button
                     type="button"
-                    onClick={() => setActiveTheme('light')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-                      activeTheme === 'light'
-                        ? 'bg-white text-slate-800 shadow-sm'
-                        : 'text-slate-500 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/80'
-                    }`}
+                    onClick={() => removeGradientColor(index)}
+                    className="h-9 w-9 shrink-0 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center"
+                    aria-label="删除渐变颜色"
                   >
-                    <Sun size={14} strokeWidth={2.4} />
-                    Light
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTheme('dark')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-                      activeTheme === 'dark'
-                        ? 'bg-slate-900 text-white shadow-sm'
-                        : 'text-slate-500 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/80'
-                    }`}
-                  >
-                    <Moon size={14} strokeWidth={2.4} />
-                    Dark
+                    <Trash2 size={16} strokeWidth={2.4} />
                   </button>
                 </div>
-                <span className="text-[10px] font-black text-slate-400 uppercase">
-                  当前组：{currentImages.length} 张
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[520px] overflow-y-auto pr-1 custom-scrollbar">
-                <AnimatePresence mode="popLayout">
-                  {currentImages.map((url, index) => (
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, scale: 0.94 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.94 }}
-                      key={`${activeTheme}-${url}-${index}`}
-                      className="relative group rounded-2xl overflow-hidden aspect-video shadow-md border border-white/30 bg-slate-200 dark:bg-slate-900"
-                    >
-                      <img
-                        src={url}
-                        alt={`${activeTheme}-background-${index + 1}`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-black text-white backdrop-blur-sm">
-                        {activeTheme === 'light' ? 'Light' : 'Dark'} {index + 1}
-                      </div>
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                        <button
-                          type="button"
-                          onClick={() => removeBg(index)}
-                          className="w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center font-bold shadow-xl hover:bg-red-600 scale-0 group-hover:scale-100 transition-transform"
-                          aria-label="删除背景图"
-                        >
-                          <X size={20} strokeWidth={2.6} />
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-
-                {currentImages.length === 0 && (
-                  <div className="w-full h-36 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl text-slate-400 text-xs font-bold">
-                    当前主题组还没有背景图。
-                  </div>
-                )}
-              </div>
+              ))}
             </div>
-          )}
+
+            <div className="mt-4 flex gap-2">
+              <input
+                type="color"
+                value={isHexColor(newGradientColor) ? newGradientColor : '#ffffff'}
+                onChange={(event) => setNewGradientColor(event.target.value)}
+                className="h-11 w-14 shrink-0 rounded-xl border-none bg-transparent cursor-pointer"
+                aria-label="选择新渐变颜色"
+              />
+              <input
+                type="text"
+                value={newGradientColor}
+                onChange={(event) => setNewGradientColor(event.target.value)}
+                placeholder="#8b5cf6"
+                className="min-w-0 flex-1 bg-white dark:bg-slate-950 rounded-xl px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-100 outline-none"
+              />
+              <button
+                type="button"
+                onClick={addGradientColor}
+                className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center gap-1.5"
+              >
+                <Plus size={14} strokeWidth={2.6} />
+                添加
+              </button>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="bg-white/50 dark:bg-slate-800/50 rounded-3xl p-5 border border-white/40 dark:border-slate-700/50 shadow-sm">
@@ -492,7 +496,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
                   type="text"
                   placeholder="https://..."
                   value={formData.newBgUrl || ''}
-                  onChange={(e) => handleUpdate('newBgUrl', e.target.value)}
+                  onChange={(event) => handleUpdate('newBgUrl', event.target.value)}
                   className="min-w-0 flex-1 bg-white dark:bg-slate-900 border-none rounded-xl px-4 py-2 text-xs outline-none shadow-inner text-slate-700 dark:text-slate-100"
                 />
                 <button
@@ -519,7 +523,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
               <input
                 type="file"
                 ref={fileInputRef}
-                onChange={(e) => e.target.files && handleFileUpload(e.target.files[0])}
+                onChange={(event) => event.target.files && handleFileUpload(event.target.files[0])}
                 className="hidden"
                 accept="image/*"
               />
@@ -581,13 +585,17 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
                     max={config.max}
                     step={config.step}
                     value={value}
-                    onChange={(e) => updateSlider(config, Number(e.target.value))}
+                    onChange={(event) => updateSlider(config, Number(event.target.value))}
                     className="w-full accent-indigo-500"
                   />
                   <p className="mt-1 text-[10px] font-bold text-slate-400">{config.help}</p>
                 </label>
               );
             })}
+          </div>
+
+          <div className="mt-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 px-4 py-3 text-[11px] font-bold text-amber-700 dark:text-amber-300 leading-relaxed">
+            当前按钮只是加入待保存队列。要写入配置并在刷新后回填滑块，请点击右上角操作队列里的“更新本地”。
           </div>
         </aside>
       </div>
