@@ -1,29 +1,147 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Save, Bot, Sparkles, Sliders, MessageSquareText, Cpu } from 'lucide-react';
+import {
+  AlertTriangle,
+  Bot,
+  CheckCircle2,
+  Cpu,
+  KeyRound,
+  Loader2,
+  MessageSquareText,
+  RefreshCw,
+  Save,
+  Send,
+  Sliders,
+  Sparkles,
+} from 'lucide-react';
 
-export default function AICatSection({ formData, handleUpdate, pushToQueue }: any) {
-  // 防止 undefined
-  const config = formData.geminiConfig || {
-    modelId: 'gemini-2.5-flash-lite',
-    systemPrompt: '',
-    maxOutputTokens: 150,
-    temperature: 0.85
+type GeminiStatus = {
+  status: string;
+  provider: string;
+  model: string;
+  keyConfigured: boolean;
+  promptConfigured: boolean;
+  maxOutputTokens: number;
+  temperature: number;
+};
+
+type GeminiTestResult = {
+  ok: boolean;
+  message: string;
+  details?: string;
+};
+
+type GeminiConfig = {
+  modelId: string;
+  systemPrompt: string;
+  maxOutputTokens: number;
+  temperature: number;
+};
+
+type AICatSectionProps = {
+  formData: {
+    geminiConfig?: Record<string, unknown>;
   };
+  handleUpdate: (field: string, value: unknown) => void;
+  pushToQueue: (label: string, key?: string, value?: unknown) => void;
+};
+
+const defaultGeminiConfig: GeminiConfig = {
+  modelId: 'gemini-2.5-flash-lite',
+  systemPrompt: '',
+  maxOutputTokens: 150,
+  temperature: 0.85,
+};
+
+function normalizeGeminiConfig(value?: Record<string, unknown>): GeminiConfig {
+  return {
+    modelId: typeof value?.modelId === 'string' ? value.modelId : defaultGeminiConfig.modelId,
+    systemPrompt: typeof value?.systemPrompt === 'string' ? value.systemPrompt : defaultGeminiConfig.systemPrompt,
+    maxOutputTokens:
+      typeof value?.maxOutputTokens === 'number' ? value.maxOutputTokens : defaultGeminiConfig.maxOutputTokens,
+    temperature: typeof value?.temperature === 'number' ? value.temperature : defaultGeminiConfig.temperature,
+  };
+}
+
+export default function AICatSection({ formData, handleUpdate, pushToQueue }: AICatSectionProps) {
+  // 防止 undefined
+  const config = normalizeGeminiConfig(formData.geminiConfig);
 
   // 🌟 核心防崩魔法：将系统提示词的状态独立出来
   const [localPrompt, setLocalPrompt] = useState('');
+  const [geminiStatus, setGeminiStatus] = useState<GeminiStatus | null>(null);
+  const [isStatusLoading, setIsStatusLoading] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testMessage, setTestMessage] = useState('请用一句话确认 Gemini 小助手已经可以正常工作。');
+  const [testResult, setTestResult] = useState<GeminiTestResult | null>(null);
+
+  const loadGeminiStatus = useCallback(async () => {
+    setIsStatusLoading(true);
+    try {
+      const res = await fetch('/api/chat', { cache: 'no-store' });
+      const data = await res.json();
+      setGeminiStatus(data);
+    } catch {
+      setGeminiStatus(null);
+    } finally {
+      setIsStatusLoading(false);
+    }
+  }, []);
+
+  const testGemini = async () => {
+    if (!testMessage.trim()) {
+      setTestResult({ ok: false, message: '测试内容不能为空。' });
+      return;
+    }
+
+    setIsTesting(true);
+    setTestResult(null);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: testMessage }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setTestResult({
+          ok: false,
+          message: data.userMessage || data.details || 'Gemini 测试失败。',
+          details: data.details,
+        });
+        await loadGeminiStatus();
+        return;
+      }
+
+      setTestResult({
+        ok: true,
+        message: data.reply || 'Gemini 已返回响应。',
+      });
+      await loadGeminiStatus();
+    } catch (error) {
+      setTestResult({
+        ok: false,
+        message: error instanceof Error ? error.message : '无法连接小助手接口。',
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
 
   // 初始化时，如果后端传来的是安全转义的 \n，我们把它还原成真实的换行，让文本框正常显示
   useEffect(() => {
-    if (config.systemPrompt) {
-      setLocalPrompt(config.systemPrompt.replace(/\\n/g, '\n'));
-    }
-  }, []); // 仅挂载时同步一次，防止死循环
+    setLocalPrompt(config.systemPrompt.replace(/\\n/g, '\n'));
+  }, [config.systemPrompt]);
 
-  const updateConfig = (key: string, value: any) => {
+  useEffect(() => {
+    loadGeminiStatus();
+  }, [loadGeminiStatus]);
+
+  const updateConfig = (key: keyof GeminiConfig, value: GeminiConfig[keyof GeminiConfig]) => {
     handleUpdate('geminiConfig', { ...config, [key]: value });
   };
 
@@ -64,6 +182,89 @@ export default function AICatSection({ formData, handleUpdate, pushToQueue }: an
       </div>
 
       <div className="grid grid-cols-1 gap-8">
+        <div className="rounded-3xl border border-white/50 dark:border-slate-700/50 bg-white/45 dark:bg-slate-800/45 p-5 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-xs font-black text-slate-400 uppercase mb-2 flex items-center gap-2">
+                <KeyRound size={14} className="text-indigo-500" />
+                Gemini Runtime Status
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black ${
+                  geminiStatus?.keyConfigured
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                }`}>
+                  {geminiStatus?.keyConfigured ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
+                  {geminiStatus?.keyConfigured ? 'Key 已配置' : 'Key 未配置'}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1.5 text-[11px] font-black text-blue-600 dark:text-blue-400">
+                  <Cpu size={13} />
+                  {geminiStatus?.model || config.modelId || 'gemini-2.5-flash-lite'}
+                </span>
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black ${
+                  geminiStatus?.promptConfigured
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                    : 'bg-slate-500/10 text-slate-500 dark:text-slate-300'
+                }`}>
+                  <MessageSquareText size={13} />
+                  {geminiStatus?.promptConfigured ? 'Prompt 已保存' : 'Prompt 为空'}
+                </span>
+              </div>
+              <p className="mt-3 text-[11px] font-bold text-slate-400 leading-relaxed">
+                API Key 只从环境变量 <span className="font-mono">GEMINI_API_KEY</span> 读取，不会写入公开配置或提交到仓库。测试使用当前已保存的小助手配置。
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={loadGeminiStatus}
+              disabled={isStatusLoading}
+              className="self-start inline-flex items-center gap-2 rounded-2xl bg-slate-900/5 dark:bg-white/10 px-4 py-2 text-xs font-black text-slate-600 dark:text-slate-300 hover:bg-slate-900/10 dark:hover:bg-white/20 disabled:opacity-60 transition-colors"
+            >
+              <RefreshCw size={14} className={isStatusLoading ? 'animate-spin' : ''} />
+              刷新状态
+            </button>
+          </div>
+
+          <div className="mt-5 rounded-2xl bg-white/55 dark:bg-slate-950/30 border border-white/50 dark:border-slate-700/50 p-4">
+            <label className="text-[11px] font-black text-slate-400 uppercase mb-2 block">
+              发送测试探针
+            </label>
+            <div className="flex flex-col gap-3 md:flex-row">
+              <input
+                type="text"
+                value={testMessage}
+                onChange={(e) => setTestMessage(e.target.value)}
+                className="flex-1 bg-white/70 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl px-4 py-3 text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500/50"
+                placeholder="输入一条测试消息"
+              />
+              <button
+                type="button"
+                onClick={testGemini}
+                disabled={isTesting}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-600 disabled:opacity-60 transition-colors"
+              >
+                {isTesting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                {isTesting ? '测试中...' : '测试 Gemini'}
+              </button>
+            </div>
+
+            {testResult && (
+              <div className={`mt-4 rounded-2xl border p-4 text-sm leading-relaxed ${
+                testResult.ok
+                  ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                  : 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+              }`}>
+                <p className="font-bold">{testResult.message}</p>
+                {testResult.details && (
+                  <p className="mt-2 text-[11px] opacity-80 break-words">{testResult.details}</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* 模型 ID */}
         <div className="group">
           <label className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-300 mb-3">

@@ -6,9 +6,9 @@ export const siteConfig = {
   authorName: "R0L1_",
   bio: "",
 
-  navTitle: "R0L1_の小家",
+  navTitle: "R0L1_",
   navSuffix: "·",
-  navAfter: "后院",
+  navAfter: "の小家",
 
   avatarUrl: "https://v1.lskypro.com/TSQ83r.jpg",
 
