@@ -23,6 +23,7 @@ import {
 import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
 import Comments from '../../components/Comments';
+import MusicLibraryManager from '../../components/music/MusicLibraryManager';
 import { LyricLine, MusicSong, useMusic } from '../../components/MusicProvider';
 
 type MusicTab = 'lyrics' | 'playlist';
@@ -126,13 +127,18 @@ export default function MusicPage() {
     return (
       <div className="min-h-screen relative pb-32 flex flex-col">
         <Navbar />
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
-          <Music2 size={48} className="text-indigo-500" />
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white">暂无可播放音乐</h1>
-          <p className="max-w-md text-sm text-slate-500 dark:text-slate-400">
-            请在管理端配置文件的 `cloudMusicIds` 中添加网易云歌曲 ID，或稍后重试音乐接口。
-          </p>
-        </div>
+        <PageTransition>
+          <main className="w-full max-w-7xl mx-auto mt-28 px-4 sm:px-10 relative z-10">
+            <MusicLibraryManager />
+            <div className="min-h-[360px] flex flex-col items-center justify-center gap-4 px-6 text-center rounded-[28px] bg-white/45 dark:bg-slate-900/45 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-2xl">
+              <Music2 size={48} className="text-indigo-500" />
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white">暂无可播放音乐</h1>
+              <p className="max-w-md text-sm text-slate-500 dark:text-slate-400">
+                请先在上方输入网易云歌曲 ID，加入队列后点击右上角“更新本地”写入配置。
+              </p>
+            </div>
+          </main>
+        </PageTransition>
       </div>
     );
   }
@@ -161,6 +167,8 @@ export default function MusicPage() {
               用于确认管理端播放器的数据、控制和歌词展示是否正常。
             </p>
           </header>
+
+          <MusicLibraryManager />
 
           <section className="grid grid-cols-1 md:grid-cols-12 gap-8 w-full items-stretch h-[calc(100vh-320px)] min-h-[600px] max-h-[720px]">
             <div className="md:col-span-5 h-full flex flex-col bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-[28px] shadow-2xl p-10 relative overflow-hidden transition-all duration-500">

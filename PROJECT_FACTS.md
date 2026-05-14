@@ -43,6 +43,7 @@ site changed correctly after save, not only that the manager UI saved data.
 2. v2 site settings:
    - `siteConfig.ts`
    - profile, nav, theme, background, music IDs, footer, chat settings
+   - Music IDs are managed from the local manager music page and queued as a `CONFIG` operation for `cloudMusicIds`.
 3. v3 structured data:
    - `data/albums.ts`
    - `data/friends.ts`

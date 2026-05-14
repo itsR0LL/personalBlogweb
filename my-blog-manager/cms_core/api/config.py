@@ -24,7 +24,7 @@ def get_config_path():
         if os.path.exists(p):
             return p
 
-    print(f"❌ 警告：在 Manager 目录未找到 siteConfig.ts！正在搜索的根目录是: {PROJECT_ROOT}")
+    print(f"[CONFIG] Warning: siteConfig.ts not found under Manager root: {PROJECT_ROOT}")
     return None
 
 
@@ -83,6 +83,15 @@ def get_site_config():
 
                 parsed_config[dict_name] = sub_dict
 
+        # 1.5. Extract root-level string arrays used by manager settings.
+        array_keys = ['cloudMusicIds', 'bgImages', 'themeColors', 'danmakuList']
+        for array_name in array_keys:
+            array_match = re.search(rf'{array_name}\s*:\s*\[([\s\S]*?)\]', root_content)
+            if array_match:
+                array_raw = array_match.group(1)
+                parsed_config[array_name] = re.findall(r'["\']([^"\']*)["\']', array_raw)
+                root_content = re.sub(rf'{array_name}\s*:\s*\[[\s\S]*?\],?', '', root_content, count=1)
+
         # 2. 提取外层基础字符串变量
         for match in re.finditer(r'([a-zA-Z0-9_]+)\s*:\s*(["\'])([\s\S]*?)\2', root_content):
             key, _, val = match.groups()
@@ -124,14 +133,14 @@ def update_site_config(payload: Dict[str, Any] = Body(...)):
             content = f.read()
 
         print("\n" + "=" * 50)
-        print(f"🔥 启动物理引擎，目标文件: {config_path}")
+        print(f"[CONFIG] Start update, target file: {config_path}")
         updated_count = 0
 
         for key, value in updates.items():
 
             # 拦截非白名单字段，彻底防止二次覆写灾难
             if key not in VALID_ROOT_KEYS:
-                print(f"  🛑 拦截非根节点危险字段 -> [{key}]")
+                print(f"  [CONFIG] Skip non-root or unsafe field -> [{key}]")
                 continue
 
             # 专属通道 1：Gitalk 特殊格式组装
@@ -157,7 +166,7 @@ def update_site_config(payload: Dict[str, Any] = Body(...)):
                 pattern = rf"({key}\s*:\s*)\{{[\s\S]*?\}}"
                 if re.search(pattern, content):
                     content = re.sub(pattern, lambda m: m.group(1) + gitalk_ts_code, content, count=1)
-                    print(f"  ✅ 成功修改并落盘(专列) -> [{key}]")
+                    print(f"  [CONFIG] Updated special field -> [{key}]")
                     updated_count += 1
                 continue
 
@@ -181,18 +190,18 @@ def update_site_config(payload: Dict[str, Any] = Body(...)):
 
             if re.search(pattern, content):
                 content = re.sub(pattern, lambda m: m.group(1) + val_str, content, count=1)
-                print(f"  ✅ 成功修改并落盘 -> [{key}]")
+                print(f"  [CONFIG] Updated field -> [{key}]")
                 updated_count += 1
 
         # 写入物理磁盘
         with open(config_path, 'w', encoding='utf-8') as f:
             f.write(content)
 
-        print(f"🔥 任务圆满完成，共刷新 {updated_count} 个字段")
+        print(f"[CONFIG] Update complete, refreshed {updated_count} fields")
         print("=" * 50 + "\n")
 
         return {"success": True, "message": "本地 siteConfig.ts 修改成功！"}
 
     except Exception as e:
-        print(f"❌ 物理写入发生灾难性错误: {str(e)}")
+        print(f"[CONFIG] Update failed: {str(e)}")
         return {"success": False, "message": f"文件读写错误: {str(e)}"}
