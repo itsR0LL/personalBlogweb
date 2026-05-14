@@ -3,7 +3,12 @@ import { siteConfig } from '../../../siteConfig';
 
 export const runtime = 'edge';
 
-const jsonHeaders = { 'Content-Type': 'application/json' };
+const jsonHeaders = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
 const DEFAULT_MODEL_ID = 'gemini-2.5-flash-lite';
 
 function json(data: unknown, status = 200) {
@@ -113,4 +118,8 @@ export async function GET() {
     maxOutputTokens: siteConfig.geminiConfig.maxOutputTokens,
     temperature: siteConfig.geminiConfig.temperature,
   });
+}
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: jsonHeaders });
 }

@@ -19,12 +19,17 @@ import {
 
 type GeminiStatus = {
   status: string;
+  runtime?: string;
   provider: string;
   model: string;
   keyConfigured: boolean;
   promptConfigured: boolean;
   maxOutputTokens: number;
   temperature: number;
+  production?: Partial<GeminiStatus> & {
+    reachable?: boolean;
+    error?: string;
+  };
 };
 
 type GeminiTestResult = {
@@ -54,6 +59,7 @@ const defaultGeminiConfig: GeminiConfig = {
   maxOutputTokens: 150,
   temperature: 0.85,
 };
+const productionChatUrl = 'https://personalblogweb.vercel.app/api/chat';
 
 function normalizeGeminiConfig(value?: Record<string, unknown>): GeminiConfig {
   return {
@@ -72,8 +78,10 @@ export default function AICatSection({ formData, handleUpdate, pushToQueue }: AI
   // 🌟 核心防崩魔法：将系统提示词的状态独立出来
   const [localPrompt, setLocalPrompt] = useState('');
   const [geminiStatus, setGeminiStatus] = useState<GeminiStatus | null>(null);
+  const [productionStatus, setProductionStatus] = useState<Partial<GeminiStatus> & { reachable?: boolean; error?: string } | null>(null);
   const [isStatusLoading, setIsStatusLoading] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
+  const [testTarget, setTestTarget] = useState<'production' | 'local'>('production');
   const [testMessage, setTestMessage] = useState('请用一句话确认 Gemini 小助手已经可以正常工作。');
   const [testResult, setTestResult] = useState<GeminiTestResult | null>(null);
 
@@ -85,6 +93,20 @@ export default function AICatSection({ formData, handleUpdate, pushToQueue }: AI
       setGeminiStatus(data);
     } catch {
       setGeminiStatus(null);
+    }
+
+    try {
+      const productionRes = await fetch(productionChatUrl, { cache: 'no-store' });
+      const productionData = await productionRes.json();
+      setProductionStatus({
+        ...productionData,
+        reachable: productionRes.ok,
+      });
+    } catch (error) {
+      setProductionStatus({
+        reachable: false,
+        error: error instanceof Error ? error.message : '无法连接线上接口',
+      });
     } finally {
       setIsStatusLoading(false);
     }
@@ -100,7 +122,7 @@ export default function AICatSection({ formData, handleUpdate, pushToQueue }: AI
     setTestResult(null);
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch(testTarget === 'production' ? productionChatUrl : '/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: testMessage }),
@@ -189,30 +211,56 @@ export default function AICatSection({ formData, handleUpdate, pushToQueue }: AI
                 <KeyRound size={14} className="text-indigo-500" />
                 Gemini Runtime Status
               </p>
-              <div className="flex flex-wrap gap-2">
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black ${
-                  geminiStatus?.keyConfigured
-                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                }`}>
-                  {geminiStatus?.keyConfigured ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
-                  {geminiStatus?.keyConfigured ? 'Key 已配置' : 'Key 未配置'}
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1.5 text-[11px] font-black text-blue-600 dark:text-blue-400">
-                  <Cpu size={13} />
-                  {geminiStatus?.model || config.modelId || 'gemini-2.5-flash-lite'}
-                </span>
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black ${
-                  geminiStatus?.promptConfigured
-                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                    : 'bg-slate-500/10 text-slate-500 dark:text-slate-300'
-                }`}>
-                  <MessageSquareText size={13} />
-                  {geminiStatus?.promptConfigured ? 'Prompt 已保存' : 'Prompt 为空'}
-                </span>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-white/50 dark:border-slate-700/50 bg-white/55 dark:bg-slate-950/30 p-4">
+                  <p className="mb-3 text-[11px] font-black uppercase text-slate-400">本地管理端</p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black ${
+                      geminiStatus?.keyConfigured
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                    }`}>
+                      {geminiStatus?.keyConfigured ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
+                      {geminiStatus?.keyConfigured ? 'Key 已配置' : 'Key 未配置'}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1.5 text-[11px] font-black text-blue-600 dark:text-blue-400">
+                      <Cpu size={13} />
+                      {geminiStatus?.model || config.modelId || 'gemini-2.5-flash-lite'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/50 dark:border-slate-700/50 bg-white/55 dark:bg-slate-950/30 p-4">
+                  <p className="mb-3 text-[11px] font-black uppercase text-slate-400">线上 Vercel</p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black ${
+                      productionStatus?.keyConfigured
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                    }`}>
+                      {productionStatus?.keyConfigured ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
+                      {productionStatus?.keyConfigured ? 'Key 已配置' : 'Key 未配置'}
+                    </span>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black ${
+                      productionStatus?.reachable
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                    }`}>
+                      {productionStatus?.reachable ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
+                      {productionStatus?.reachable ? '接口可达' : '接口异常'}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1.5 text-[11px] font-black text-blue-600 dark:text-blue-400">
+                      <Cpu size={13} />
+                      {productionStatus?.model || 'gemini-2.5-flash-lite'}
+                    </span>
+                  </div>
+                  {productionStatus?.error && (
+                    <p className="mt-2 text-[11px] font-bold text-rose-500">{productionStatus.error}</p>
+                  )}
+                </div>
               </div>
               <p className="mt-3 text-[11px] font-bold text-slate-400 leading-relaxed">
-                API Key 只从环境变量 <span className="font-mono">GEMINI_API_KEY</span> 读取，不会写入公开配置或提交到仓库。测试使用当前已保存的小助手配置。
+                本地状态读取管理端 dev server；线上状态由管理端服务端检测 Vercel。API Key 只从环境变量 <span className="font-mono">GEMINI_API_KEY</span> 读取，不会写入公开配置或提交到仓库。
               </p>
             </div>
 
@@ -231,6 +279,30 @@ export default function AICatSection({ formData, handleUpdate, pushToQueue }: AI
             <label className="text-[11px] font-black text-slate-400 uppercase mb-2 block">
               发送测试探针
             </label>
+            <div className="mb-3 inline-flex rounded-2xl bg-slate-100/80 dark:bg-slate-900/70 p-1">
+              <button
+                type="button"
+                onClick={() => setTestTarget('production')}
+                className={`rounded-xl px-3 py-1.5 text-[11px] font-black transition-colors ${
+                  testTarget === 'production'
+                    ? 'bg-indigo-500 text-white'
+                    : 'text-slate-500 dark:text-slate-300 hover:bg-white/70 dark:hover:bg-slate-800'
+                }`}
+              >
+                测线上 Vercel
+              </button>
+              <button
+                type="button"
+                onClick={() => setTestTarget('local')}
+                className={`rounded-xl px-3 py-1.5 text-[11px] font-black transition-colors ${
+                  testTarget === 'local'
+                    ? 'bg-indigo-500 text-white'
+                    : 'text-slate-500 dark:text-slate-300 hover:bg-white/70 dark:hover:bg-slate-800'
+                }`}
+              >
+                测本地管理端
+              </button>
+            </div>
             <div className="flex flex-col gap-3 md:flex-row">
               <input
                 type="text"

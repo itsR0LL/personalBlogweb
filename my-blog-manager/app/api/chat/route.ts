@@ -3,7 +3,12 @@ import { siteConfig } from '../../../siteConfig';
 
 export const runtime = 'edge';
 
-const jsonHeaders = { 'Content-Type': 'application/json' };
+const jsonHeaders = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
 const DEFAULT_MODEL_ID = 'gemini-2.5-flash-lite';
 
 function json(data: unknown, status = 200) {
@@ -90,7 +95,7 @@ export async function POST(req: Request) {
       .trim() || '助手暂时没有生成回复。';
 
     console.log('[chat] Gemini reply generated');
-    return json({ reply, provider: 'gemini', model: modelId, keyConfigured: true });
+    return json({ reply, provider: 'gemini', model: modelId, keyConfigured: true, target: 'local' });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown runtime error';
     console.error('[chat] Runtime error:', message);
@@ -104,8 +109,10 @@ export async function POST(req: Request) {
 
 export async function GET() {
   const apiKey = getApiKey();
+
   return json({
     status: 'Ready',
+    runtime: 'local-manager',
     provider: 'gemini',
     model: getModelId(),
     keyConfigured: Boolean(apiKey),
@@ -113,4 +120,8 @@ export async function GET() {
     maxOutputTokens: siteConfig.geminiConfig.maxOutputTokens,
     temperature: siteConfig.geminiConfig.temperature,
   });
+}
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: jsonHeaders });
 }
