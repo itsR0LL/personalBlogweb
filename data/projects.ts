@@ -1,3 +1,4 @@
+// 本文件由 Blog Manager 自动生成，请勿手动修改。
 export type Project = {
   id: string;
   name: string;
@@ -9,19 +10,11 @@ export type Project = {
 
 export const projectsData: Project[] = [
   {
-    id: "ai-agent-workflow",
-    name: "AI Agent Workflow Team",
-    githubUrl: "",
-    description: "A solo-developer workflow that routes product, design, architecture, implementation, QA, security, review, docs, and release work through focused AI roles.",
-    icon: "AI",
-    tags: ["AI Agent", "Workflow", "Solo Dev"],
-  },
-  {
-    id: "personal-blog",
-    name: "Personal Blog Web",
-    githubUrl: "",
-    description: "A glassmorphism personal blog based on XinghuisamaBlogs, customized for writing build notes, articles, moments, projects, and links.",
-    icon: "Blog",
-    tags: ["Next.js", "Markdown", "Blog"],
+    id: "project-placeholder",
+    name: "博客管理占位项目",
+    githubUrl: "https://example.com",
+    description: "用于验证项目矩阵页面的占位数据，正式使用前请替换为自己的项目介绍和仓库链接。",
+    icon: "Project",
+    tags: ["占位内容", "博客管理"],
   },
 ];

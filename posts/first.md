@@ -1,29 +1,17 @@
 ---
-title: "用 AI Agent 工作流启动个人博客"
-date: "2026-05-11 09:00:00"
-description: "这篇开篇笔记记录本站存在的原因，以及后续如何使用 AI 工作流推进建设。"
-cover: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop"
-tags: ["AI Agent", "工作流", "博客"]
+title: "管理端占位文章"
+date: "2026-05-11 10:00:00"
+description: "用于验证博客列表、详情页和编辑流程的中性占位文章。"
+cover: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop"
+tags: ["占位内容", "博客管理"]
 ---
 
-## Why This Blog Exists
+## 占位说明
 
-This blog is the working notebook for a solo developer.
+这是一篇用于测试管理端展示、编辑和同步流程的占位文章。正式发布前，请在后台编辑器中替换为自己的文章标题、封面、标签和正文内容。
 
-The goal is not to publish polished essays only. The goal is to keep a visible record of decisions, experiments, build logs, and release notes. A personal site becomes more useful when it captures the real development process instead of only the final result.
+## 发布检查
 
-## How the Workflow Helps
-
-The project uses an AI-agent workflow with focused roles:
-
-- product manager for scope and acceptance criteria
-- UX designer for user-facing behavior
-- solution architect for technical shape
-- engineers for implementation
-- QA, security, review, docs, and release roles for validation
-
-That means each meaningful change should leave behind a clear handoff: what was changed, why it was changed, and how it was checked.
-
-## Next Steps
-
-The first version of the blog keeps the original glassmorphism visual style, Markdown content model, music widget, moments, projects, friends, and photo wall. Future work can add a real domain, comment configuration, analytics, and richer article categories.
+- 确认封面图片可访问。
+- 确认摘要能准确概括正文。
+- 确认标签不会混入旧仓库内容。

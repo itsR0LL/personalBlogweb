@@ -1,34 +1,12 @@
 ---
-title: About
+title: 关于我
 date: '2026-05-11'
-tags:
-  - About
-  - Solo Developer
-cover: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop
-description: A short introduction for this personal blog.
+tags: []
+mood: ''
+cover: https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop
+description: ''
 ---
 
-# About This Blog
+这里是个人简介占位内容。
 
-This site is a personal writing space for a solo developer.
-
-It is designed to collect:
-
-- long-form technical articles
-- short build notes
-- product and AI-agent workflow experiments
-- project records
-- small moments from the development process
-
-The current version is based on the open-source `XinghuisamaBlogs` project and has been customized into a clean starting point for future personal publishing.
-
-## Current Focus
-
-- AI-assisted product development
-- solo-developer workflows
-- frontend and backend engineering notes
-- reusable templates, checklists, and experiments
-
-## Contact
-
-Update `siteConfig.ts` with GitHub, email, and social links when you are ready to publish the site publicly.
+你可以在管理端编辑这一页，补充真实的个人介绍、项目方向、联系方式和站点说明。正式上线前，请确认所有内容都来自本人或已获得授权。
