@@ -8,6 +8,13 @@ router = APIRouter()
 
 CURRENT_API_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_API_DIR, "..", ".."))
+NUMBER_FIELDS = [
+    "backgroundBlurPx",
+    "backgroundOverlayLight",
+    "backgroundOverlayDark",
+    "gradientIntensity",
+    "gradientGlowBlurPx",
+]
 
 
 def get_config_path():
@@ -80,6 +87,16 @@ def remove_property(content: str, key: str, start: int, end: int):
         final_end += 1
 
     return content[: prop_start.start()] + content[final_end:]
+
+
+def insert_root_property(content: str, key: str, value: str):
+    match = re.search(r"\n\};\s*$", content)
+    if not match:
+        match = re.search(r"\};\s*$", content)
+    if not match:
+        return content
+
+    return content[: match.start()] + f"\n  {key}: {value}," + content[match.start() :]
 
 
 def extract_string_array(content: str, key: str):
@@ -155,6 +172,13 @@ def get_site_config():
                 parsed_config[bool_name] = bool_match.group(1) == "true"
                 root_content = re.sub(rf"{bool_name}\s*:\s*(true|false),?", "", root_content, count=1)
 
+        for number_name in NUMBER_FIELDS:
+            number_match = re.search(rf"{number_name}\s*:\s*(-?\d+(?:\.\d+)?)", root_content)
+            if number_match:
+                raw_number = number_match.group(1)
+                parsed_config[number_name] = float(raw_number) if "." in raw_number else int(raw_number)
+                root_content = re.sub(rf"{number_name}\s*:\s*(-?\d+(?:\.\d+)?),?", "", root_content, count=1)
+
         for match in re.finditer(r"([a-zA-Z0-9_]+)\s*:\s*([\"'])([\s\S]*?)\2", root_content):
             key, _, val = match.groups()
             parsed_config[key] = val.replace("\\n", "\n")
@@ -181,6 +205,11 @@ def update_site_config(payload: Dict[str, Any] = Body(...)):
         "avatarUrl",
         "useGradient",
         "themeColors",
+        "backgroundBlurPx",
+        "backgroundOverlayLight",
+        "backgroundOverlayDark",
+        "gradientIntensity",
+        "gradientGlowBlurPx",
         "bgImages",
         "lightBgImages",
         "darkBgImages",
@@ -253,12 +282,18 @@ def update_site_config(payload: Dict[str, Any] = Body(...)):
             elif isinstance(value, list):
                 pattern = rf"({key}\s*:\s*)\[[\s\S]*?\]"
             else:
-                pattern = rf"({key}\s*:\s*)(['\"`][\s\S]*?['\"`]|true|false|\d+)"
+                pattern = rf"({key}\s*:\s*)(['\"`][\s\S]*?['\"`]|true|false|-?\d+(?:\.\d+)?)"
 
             if re.search(pattern, content):
                 content = re.sub(pattern, lambda match: match.group(1) + val_str, content, count=1)
                 updated_count += 1
                 print(f"  [CONFIG] Updated field -> [{key}]")
+            else:
+                next_content = insert_root_property(content, key, val_str)
+                if next_content != content:
+                    content = next_content
+                    updated_count += 1
+                    print(f"  [CONFIG] Inserted field -> [{key}]")
 
         with open(config_path, "w", encoding="utf-8") as file:
             file.write(content)

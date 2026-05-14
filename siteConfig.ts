@@ -14,6 +14,11 @@ export const siteConfig = {
 
   useGradient: false,
   themeColors: ["#e2e8f0", "#bfdbfe", "#bbf7d0", "#fde68a"],
+  backgroundBlurPx: 4,
+  backgroundOverlayLight: 0.22,
+  backgroundOverlayDark: 0.32,
+  gradientIntensity: 0.48,
+  gradientGlowBlurPx: 72,
   bgImages: ["/images/backgrounds/light-1.png", "/images/backgrounds/light-2.jpg", "/images/backgrounds/light-3.jpg", "/images/backgrounds/light-4.webp", "/images/backgrounds/light-5.jpg", "/images/backgrounds/light-6.jpg"],
   lightBgImages: ["/images/backgrounds/light-1.png", "/images/backgrounds/light-2.jpg", "/images/backgrounds/light-3.jpg", "/images/backgrounds/light-4.webp", "/images/backgrounds/light-5.jpg", "/images/backgrounds/light-6.jpg"],
   darkBgImages: ["/images/backgrounds/dark-1.jpg", "/images/backgrounds/dark-2.jpg", "/images/backgrounds/dark-3.png", "/images/backgrounds/dark-4.jpg", "/images/backgrounds/dark-5.webp", "/images/backgrounds/dark-6.jpg"],

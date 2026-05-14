@@ -40,6 +40,11 @@ type SettingsFormData = {
   bgImages: string[];
   lightBgImages: string[];
   darkBgImages: string[];
+  backgroundBlurPx: number;
+  backgroundOverlayLight: number;
+  backgroundOverlayDark: number;
+  gradientIntensity: number;
+  gradientGlowBlurPx: number;
   gitalkConfig: {
     clientID: string;
     clientSecret: string;
@@ -59,6 +64,10 @@ function SettingsContent() {
   const { addOperation } = useOperations();
   const [activeTab, setActiveTab] = useState('profile');
   const { showToast } = useToast();
+  const staticConfig = siteConfig as typeof siteConfig & Partial<Pick<
+    SettingsFormData,
+    'backgroundBlurPx' | 'backgroundOverlayLight' | 'backgroundOverlayDark' | 'gradientIntensity' | 'gradientGlowBlurPx'
+  >>;
 
   const [formData, setFormData] = useState<SettingsFormData>({
     authorName: siteConfig.authorName || "",
@@ -71,6 +80,11 @@ function SettingsContent() {
     bgImages: [...(siteConfig.bgImages || [])],
     lightBgImages: [...(siteConfig.lightBgImages || siteConfig.bgImages || [])],
     darkBgImages: [...(siteConfig.darkBgImages || siteConfig.bgImages || [])],
+    backgroundBlurPx: staticConfig.backgroundBlurPx ?? 4,
+    backgroundOverlayLight: staticConfig.backgroundOverlayLight ?? 0.22,
+    backgroundOverlayDark: staticConfig.backgroundOverlayDark ?? 0.32,
+    gradientIntensity: staticConfig.gradientIntensity ?? 0.48,
+    gradientGlowBlurPx: staticConfig.gradientGlowBlurPx ?? 72,
     gitalkConfig: siteConfig.gitalkConfig || {
       clientID: '',
       clientSecret: '',
@@ -110,6 +124,8 @@ function SettingsContent() {
             ? data.data.lightBgImages
             : backendBgImages;
           const backendDarkBgImages = Array.isArray(data.data.darkBgImages) ? data.data.darkBgImages : undefined;
+          const readNumber = (key: 'backgroundBlurPx' | 'backgroundOverlayLight' | 'backgroundOverlayDark' | 'gradientIntensity' | 'gradientGlowBlurPx') =>
+            typeof data.data[key] === 'number' && Number.isFinite(data.data[key]) ? data.data[key] : undefined;
           console.log("✅ 成功从后端拉取到真实配置:", data.data);
           setFormData((prev) => ({
             ...prev,
@@ -121,6 +137,11 @@ function SettingsContent() {
             bgImages: backendBgImages ? [...backendBgImages] : prev.bgImages,
             lightBgImages: backendLightBgImages ? [...backendLightBgImages] : prev.lightBgImages,
             darkBgImages: backendDarkBgImages ? [...backendDarkBgImages] : prev.darkBgImages,
+            backgroundBlurPx: readNumber('backgroundBlurPx') ?? prev.backgroundBlurPx,
+            backgroundOverlayLight: readNumber('backgroundOverlayLight') ?? prev.backgroundOverlayLight,
+            backgroundOverlayDark: readNumber('backgroundOverlayDark') ?? prev.backgroundOverlayDark,
+            gradientIntensity: readNumber('gradientIntensity') ?? prev.gradientIntensity,
+            gradientGlowBlurPx: readNumber('gradientGlowBlurPx') ?? prev.gradientGlowBlurPx,
             danmakuList: data.data.danmakuList ? [...data.data.danmakuList] : prev.danmakuList,
             buildDate: data.data.buildDate || prev.buildDate,
             icpConfig: data.data.icpConfig || prev.icpConfig,
@@ -163,7 +184,7 @@ function SettingsContent() {
       let hasUpdate = false;
       for (const id of formData.cloudMusicIds || []) {
         if (!details[id]) {
-          const info = await fetchMusicDetail(id);
+          const info = await fetchMusicDetail(String(id));
           if (info) {
             details[id] = info;
             hasUpdate = true;
@@ -226,11 +247,9 @@ function SettingsContent() {
         : formData;
 
     addOperation({
-      id: Date.now().toString(),
       type: 'CONFIG',
       label: `配置暂存：${label}`,
       description: `修改了系统的 ${label}，等待同步至 my-blog`,
-      timestamp: new Date().toLocaleTimeString().slice(0, 5),
       payload,
       key: key,
       value: value

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 // 定义操作的类型
 export type OperationType = 'POST' | 'CHATTER' | 'CONFIG' | 'GALLERY' | 'FRIEND';
@@ -11,7 +11,9 @@ export interface Operation {
   label: string;      // 显示在列表里的简短描述，如 "修改文章：GNN研究"
   description: string; // 详细描述
   timestamp: string;
-  payload: any;       // 实际要修改的数据内容
+  payload: unknown;       // 实际要修改的数据内容
+  key?: string;
+  value?: unknown;
 }
 
 interface OperationContextType {

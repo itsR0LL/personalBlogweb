@@ -17,6 +17,19 @@ import CyberCat from '../components/CyberCat';
 // 👇 引入我们的全局弹幕系统
 import DanmakuBackground from '../components/DanmakuBackground';
 
+type BackgroundVisualConfig = {
+  backgroundBlurPx?: number;
+  backgroundOverlayLight?: number;
+  backgroundOverlayDark?: number;
+  gradientIntensity?: number;
+  gradientGlowBlurPx?: number;
+};
+
+const clampNumber = (value: unknown, min: number, max: number, fallback: number) => {
+  const numericValue = typeof value === "number" && Number.isFinite(value) ? value : fallback;
+  return Math.min(max, Math.max(min, numericValue));
+};
+
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
@@ -33,6 +46,13 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const visualConfig = siteConfig as typeof siteConfig & BackgroundVisualConfig;
+  const backgroundBlurPx = clampNumber(visualConfig.backgroundBlurPx, 0, 16, 4);
+  const backgroundOverlayLight = clampNumber(visualConfig.backgroundOverlayLight, 0, 0.6, 0.22);
+  const backgroundOverlayDark = clampNumber(visualConfig.backgroundOverlayDark, 0, 0.7, 0.32);
+  const gradientIntensity = clampNumber(visualConfig.gradientIntensity, 0, 1, 0.48);
+  const gradientGlowBlurPx = clampNumber(visualConfig.gradientGlowBlurPx, 40, 140, 72);
+
   return (
     <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} ${notoSerif.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
@@ -70,19 +90,39 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <div id="app-mount-root" className="flex-1 flex flex-col transition-opacity duration-1000">
                   <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
                     {!siteConfig.useGradient && <BackgroundSlider />}
-                    <div className="absolute inset-0 z-[-9] bg-white/30 dark:bg-slate-900/40 backdrop-blur-md transition-colors duration-1000"></div>
+                    <div
+                      className="absolute inset-0 z-[-9] opacity-100 dark:opacity-0 transition-opacity duration-1000"
+                      style={{
+                        backgroundColor: `rgb(255 255 255 / ${backgroundOverlayLight})`,
+                        backdropFilter: `blur(${backgroundBlurPx}px)`,
+                        WebkitBackdropFilter: `blur(${backgroundBlurPx}px)`,
+                      }}
+                    />
+                    <div
+                      className="absolute inset-0 z-[-9] opacity-0 dark:opacity-100 transition-opacity duration-1000"
+                      style={{
+                        backgroundColor: `rgb(15 23 42 / ${backgroundOverlayDark})`,
+                      }}
+                    />
 
                     <div
-                      className="absolute inset-0 z-[-8] opacity-60 dark:opacity-20 mix-blend-color transition-opacity duration-1000 transform-gpu"
+                      className="absolute inset-0 z-[-8] mix-blend-color transition-opacity duration-1000 transform-gpu"
                       style={{
                         background: `linear-gradient(-45deg, ${siteConfig.themeColors.join(', ')})`,
                         backgroundSize: '400% 400%',
+                        opacity: siteConfig.useGradient ? gradientIntensity : gradientIntensity * 0.45,
                         animation: 'gradientMove 15s ease infinite'
                       }}
                     ></div>
 
-                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/40 dark:bg-indigo-900/20 blur-[100px] rounded-full mix-blend-overlay z-[-7]"></div>
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/30 dark:bg-purple-900/30 blur-[100px] rounded-full mix-blend-overlay z-[-7]"></div>
+                    <div
+                      className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/40 dark:bg-indigo-900/20 rounded-full mix-blend-overlay z-[-7]"
+                      style={{ filter: `blur(${gradientGlowBlurPx}px)` }}
+                    ></div>
+                    <div
+                      className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/30 dark:bg-purple-900/30 rounded-full mix-blend-overlay z-[-7]"
+                      style={{ filter: `blur(${gradientGlowBlurPx}px)` }}
+                    ></div>
                     <BackgroundEffects />
                   </div>
 
