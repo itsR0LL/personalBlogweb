@@ -47,6 +47,9 @@ __pycache__/
 # local manager deployment config
 my-blog-manager/data/deploy_config.json
 
+# local manager runtime data
+my-blog-manager/manager_data/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
