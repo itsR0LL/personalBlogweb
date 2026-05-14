@@ -1,10 +1,44 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../ToastProvider';
-import { ShieldCheck, GitBranch, Save, Rocket, Wand2, Key, Copy, Check, CloudUpload, Code } from 'lucide-react';
+import { ShieldCheck, GitBranch, Save, Rocket, Wand2, Key, Copy, Check, CloudUpload, Code, Server, Lock, AlertTriangle, RefreshCw } from 'lucide-react';
+
+type DeployStatus = {
+  success: boolean;
+  config: {
+    blogPath: string;
+    sourceRepoUrl: string;
+    sourceRepoResolvedUrl?: string;
+    sourceBranch: string;
+    staticRepoUrl: string;
+    staticBranch: string;
+  };
+  path: {
+    valid: boolean;
+    message: string;
+  };
+  git: {
+    available: boolean;
+    currentBranch: string;
+    originUrl: string;
+  };
+  vercel: {
+    linked: boolean;
+    projectName: string;
+  };
+  deployment: {
+    staticEnabled: boolean;
+    sourceEnabled: boolean;
+  };
+  safety: {
+    managerExcluded: boolean;
+    secretFilesExcluded: boolean;
+    sourceSyncMode: string;
+  };
+};
 
 export default function RepoSection() {
   const { showToast } = useToast();
@@ -15,6 +49,8 @@ export default function RepoSection() {
   const [isUploading, setIsUploading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(false);
+  const [deployStatus, setDeployStatus] = useState<DeployStatus | null>(null);
 
   const portalRoot = typeof document === 'undefined' ? null : document.body;
 
@@ -33,6 +69,23 @@ export default function RepoSection() {
     sourceRepoUrl: "",    // 源码同步仓库
     sourceBranch: "main"      // 源码同步分支
   });
+
+  const fetchDeployStatus = useCallback(async () => {
+    setIsLoadingStatus(true);
+    try {
+      const configRes = await fetch(`/backend_config.json?t=${Date.now()}`);
+      const config = await configRes.json();
+      const res = await fetch(`http://127.0.0.1:${config.api_port}/api/deploy/status`);
+      if (res.ok) {
+        const data = await res.json();
+        setDeployStatus(data);
+      }
+    } catch {
+      setDeployStatus(null);
+    } finally {
+      setIsLoadingStatus(false);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -54,7 +107,8 @@ export default function RepoSection() {
       } catch { console.error("加载配置失败"); }
     };
     fetchConfig();
-  }, []);
+    fetchDeployStatus();
+  }, [fetchDeployStatus]);
 
   const testPathConnection = async () => {
     if (!deployData.blogPath) { showToast("路径不能为空！", "warning"); return; }
@@ -71,6 +125,7 @@ export default function RepoSection() {
       if (data.success) showToast(data.message, "success");
       else showToast(data.message, "error");
     } catch { showToast("无法连接后端服务", "error"); }
+    await fetchDeployStatus();
     setIsCheckingPath(false);
   };
 
@@ -89,6 +144,7 @@ export default function RepoSection() {
       if (data.success) showToast(data.message, "success");
       else showToast(data.message, "error");
     } catch { showToast("后端服务未响应", "error"); }
+    await fetchDeployStatus();
     setIsCheckingGit(false);
   };
 
@@ -176,7 +232,10 @@ export default function RepoSection() {
         body: JSON.stringify(deployData)
       });
       const data = await res.json();
-      if (data.success) showToast(data.message, "success");
+      if (data.success) {
+        showToast(data.message, "success");
+        await fetchDeployStatus();
+      }
     } catch { showToast("保存失败", "error"); }
     setIsSaving(false);
   };
@@ -188,6 +247,13 @@ export default function RepoSection() {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  const sourceRepoLabel = deployStatus?.config.sourceRepoUrl || deployData.sourceRepoUrl || "未配置";
+  const sourceRepoResolvedLabel = deployStatus?.config.sourceRepoResolvedUrl || deployStatus?.git.originUrl || sourceRepoLabel;
+  const sourceBranchLabel = deployStatus?.config.sourceBranch || deployData.sourceBranch || "main";
+  const staticEnabled = deployStatus?.deployment.staticEnabled ?? Boolean(deployData.staticRepoUrl);
+  const hasDeployStatus = Boolean(deployStatus);
+  const safetyProtected = Boolean(deployStatus?.safety.managerExcluded && deployStatus?.safety.secretFilesExcluded);
+
   return (
     <>
       <motion.section initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/50 dark:border-slate-800/50 rounded-[40px] p-8 shadow-2xl relative z-10">
@@ -196,6 +262,59 @@ export default function RepoSection() {
         </div>
 
         <div className="space-y-8">
+          <div className="bg-white/60 dark:bg-slate-800/40 p-5 rounded-3xl border border-white/60 dark:border-slate-700/60 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+              <label className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase flex items-center gap-1">
+                <Server size={14} className="text-blue-500" /> 当前绑定状态
+              </label>
+              <button onClick={fetchDeployStatus} disabled={isLoadingStatus} className="self-start md:self-auto inline-flex items-center gap-1 text-[10px] bg-slate-900/5 dark:bg-white/10 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-full font-bold hover:bg-slate-900/10 dark:hover:bg-white/20 transition-colors">
+                <RefreshCw size={12} className={isLoadingStatus ? "animate-spin" : ""} /> 刷新状态
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60 p-3">
+                <p className="text-[10px] font-black text-slate-400 uppercase mb-1">本地博客路径</p>
+                <p className="text-xs font-mono text-slate-700 dark:text-slate-200 break-all">{deployStatus?.config.blogPath || deployData.blogPath || "未配置"}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60 p-3">
+                <p className="text-[10px] font-black text-slate-400 uppercase mb-1">GitHub 源码仓库</p>
+                <p className="text-xs font-mono text-slate-700 dark:text-slate-200 break-all">{sourceRepoResolvedLabel}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60 p-3">
+                <p className="text-[10px] font-black text-slate-400 uppercase mb-1">同步分支</p>
+                <p className="text-xs font-black text-slate-700 dark:text-slate-200">{sourceBranchLabel}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60 p-3">
+                <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Vercel 项目</p>
+                <p className="text-xs font-black text-slate-700 dark:text-slate-200">{deployStatus?.vercel.projectName || "未绑定"}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60 p-3">
+                <p className="text-[10px] font-black text-slate-400 uppercase mb-1">静态部署</p>
+                <p className="text-xs font-black text-slate-700 dark:text-slate-200">{staticEnabled ? "已启用" : "未启用"}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/60 p-3">
+                <p className="text-[10px] font-black text-slate-400 uppercase mb-1">管理端部署</p>
+                <p className="text-xs font-black text-slate-700 dark:text-slate-200">仅本地运行，不上传 Vercel</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+              <div className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-[10px] font-black ${deployStatus?.path.valid ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 text-amber-600 dark:text-amber-400"}`}>
+                <ShieldCheck size={13} /> 路径{deployStatus?.path.valid ? "正常" : "待校验"}
+              </div>
+              <div className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-[10px] font-black ${deployStatus?.git.available ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 text-amber-600 dark:text-amber-400"}`}>
+                <GitBranch size={13} /> Git {deployStatus?.git.available ? deployStatus.git.currentBranch || "可用" : "待校验"}
+              </div>
+              <div className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-[10px] font-black ${deployStatus?.vercel.linked ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 text-amber-600 dark:text-amber-400"}`}>
+                <Rocket size={13} /> Vercel {deployStatus?.vercel.linked ? "已绑定" : "未绑定"}
+              </div>
+              <div className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-[10px] font-black ${!hasDeployStatus ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : safetyProtected ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 text-rose-600 dark:text-rose-400"}`}>
+                <Lock size={13} /> 敏感信息{!hasDeployStatus ? "待读取" : safetyProtected ? "已保护" : "需检查"}
+              </div>
+            </div>
+          </div>
+
           <div className="bg-slate-50 dark:bg-slate-800/30 p-5 rounded-3xl border border-slate-100 dark:border-slate-700/50">
             <div className="flex justify-between items-center mb-3">
                <label className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase flex items-center gap-1"><ShieldCheck size={14} className="text-indigo-500" /> 1. 本地博客路径</label>
@@ -350,7 +469,21 @@ export default function RepoSection() {
                     <>
                         <div className="w-16 h-16 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6"><CloudUpload className="text-blue-500" size={32} /></div>
                         <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">同步源码至 Vercel？</h3>
-                        <p className="text-sm text-slate-500 mb-8 leading-relaxed">将本地源代码提交并推送到源码仓库，自动触发 Vercel 构建。</p>
+                        <p className="text-sm text-slate-500 mb-4 leading-relaxed">将本地源代码提交并推送到源码仓库，自动触发 Vercel 构建。</p>
+                        <div className="space-y-3 mb-8 text-left">
+                            <div className="rounded-2xl bg-blue-500/5 border border-blue-500/20 p-3">
+                                <p className="text-[10px] font-black text-blue-500 uppercase mb-1">推送目标</p>
+                                <p className="text-xs font-mono text-slate-700 dark:text-slate-200 break-all">{sourceRepoLabel} -&gt; {sourceBranchLabel}</p>
+                            </div>
+                            <div className="flex items-start gap-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 p-3">
+                                <Lock size={15} className="text-emerald-500 mt-0.5 shrink-0" />
+                                <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300">会排除 <span className="font-mono">my-blog-manager/</span> 和本地图床 Token，不把管理端配置推到线上。</p>
+                            </div>
+                            <div className="flex items-start gap-3 rounded-2xl bg-amber-500/5 border border-amber-500/20 p-3">
+                                <AlertTriangle size={15} className="text-amber-500 mt-0.5 shrink-0" />
+                                <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300">会包含主站内容文件改动，例如文章、动态、相册、友链和公开静态资源。</p>
+                            </div>
+                        </div>
                         <div className="flex gap-3">
                             <button onClick={() => setModalConfig({isOpen: false, type: null})} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-black transition-colors hover:bg-slate-200">取消</button>
                             <button onClick={executeUploadSource} className="flex-1 py-4 bg-blue-500 text-white rounded-2xl text-xs font-black shadow-lg shadow-blue-500/30 active:scale-95 transition-all">开始同步</button>

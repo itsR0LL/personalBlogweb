@@ -14,6 +14,24 @@ CURRENT_API_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_API_DIR, "..", ".."))
 CONFIG_FILE = os.path.join(PROJECT_ROOT, "data", "deploy_config.json")
 
+PUBLIC_SITE_STAGE_PATHS = [
+    ".vercelignore",
+    "app",
+    "chatters",
+    "components",
+    "data",
+    "eslint.config.mjs",
+    "moments",
+    "next.config.ts",
+    "package-lock.json",
+    "package.json",
+    "postcss.config.mjs",
+    "posts",
+    "public",
+    "siteConfig.ts",
+    "tsconfig.json",
+]
+
 
 def npm_command(*args: str) -> list[str]:
     if os.name == "nt":
@@ -54,20 +72,102 @@ def is_safe_git_ref(value: str) -> bool:
     return bool(re.fullmatch(r"[A-Za-z0-9._/-]+", value or ""))
 
 
-@router.get("/config")
-async def get_deploy_config():
-    if os.path.exists(CONFIG_FILE):
-        try:
-            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            pass
+def default_deploy_config() -> dict:
     return {
         "blogPath": "",
         "staticRepoUrl": "",
         "staticBranch": "gh-pages",
         "sourceRepoUrl": "",
         "sourceBranch": "main",
+    }
+
+
+def load_deploy_config() -> dict:
+    config = default_deploy_config()
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                loaded = json.load(f)
+            if isinstance(loaded, dict):
+                config.update({key: loaded.get(key, value) for key, value in config.items()})
+        except Exception:
+            pass
+    return config
+
+
+def get_git_value(blog_path: str, command: list[str]) -> str:
+    process = run_command(command, cwd=blog_path)
+    if process.returncode != 0:
+        return ""
+    return process.stdout.strip()
+
+
+@router.get("/config")
+async def get_deploy_config():
+    return load_deploy_config()
+
+
+@router.get("/status")
+async def get_deploy_status():
+    config = load_deploy_config()
+    blog_path, path_error = resolve_blog_path(config.get("blogPath", ""))
+    git_available = bool(blog_path and os.path.exists(os.path.join(blog_path, ".git")))
+    current_branch = ""
+    origin_url = ""
+
+    if git_available and blog_path:
+        current_branch = get_git_value(blog_path, ["git", "rev-parse", "--abbrev-ref", "HEAD"])
+        origin_url = get_git_value(blog_path, ["git", "remote", "get-url", "origin"])
+
+    vercel_project = {}
+    if blog_path:
+        vercel_project_path = os.path.join(blog_path, ".vercel", "project.json")
+        if os.path.exists(vercel_project_path):
+            try:
+                with open(vercel_project_path, "r", encoding="utf-8") as f:
+                    raw_vercel_project = json.load(f)
+                if isinstance(raw_vercel_project, dict):
+                    vercel_project = {"projectName": raw_vercel_project.get("projectName", "")}
+            except Exception:
+                vercel_project = {}
+
+    source_repo = (config.get("sourceRepoUrl") or "").strip()
+    resolved_source_repo = origin_url if source_repo == "origin" else source_repo
+    source_branch = (config.get("sourceBranch") or "main").strip()
+    static_repo = (config.get("staticRepoUrl") or "").strip()
+
+    return {
+        "success": True,
+        "config": {
+            "blogPath": config.get("blogPath", ""),
+            "sourceRepoUrl": source_repo,
+            "sourceRepoResolvedUrl": resolved_source_repo,
+            "sourceBranch": source_branch,
+            "staticRepoUrl": static_repo,
+            "staticBranch": config.get("staticBranch", "gh-pages"),
+        },
+        "path": {
+            "valid": path_error is None,
+            "message": path_error or "路径校验通过",
+        },
+        "git": {
+            "available": git_available,
+            "currentBranch": current_branch,
+            "originUrl": origin_url,
+        },
+        "vercel": {
+            "linked": bool(vercel_project.get("projectName")),
+            "projectName": vercel_project.get("projectName", ""),
+        },
+        "deployment": {
+            "staticEnabled": bool(static_repo),
+            "sourceEnabled": bool(source_repo and source_branch),
+        },
+        "safety": {
+            "managerExcluded": "my-blog-manager" not in PUBLIC_SITE_STAGE_PATHS,
+            "secretFilesExcluded": True,
+            "sourceSyncMode": "public-site-only",
+        },
     }
 
 
@@ -241,7 +341,10 @@ async def sync_source_to_vercel(request: Request):
         if not is_safe_git_ref(source_branch):
             return {"success": False, "message": "源码分支名称不合法。"}
 
-        add_process = run_command(["git", "add", "."], cwd=blog_path)
+        # Only stage the public site. The local manager keeps secrets such as
+        # picBedToken in my-blog-manager/siteConfig.ts and must not be pushed by
+        # the one-click Vercel source sync.
+        add_process = run_command(["git", "add", "-A", "--", *PUBLIC_SITE_STAGE_PATHS], cwd=blog_path)
         if add_process.returncode != 0:
             return {"success": False, "message": f"暂存改动失败:\n{add_process.stderr}"}
 
