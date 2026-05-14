@@ -22,7 +22,7 @@ export const siteConfig = {
 
   defaultPostCover: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop",
   photoWallImage: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop",
-  cloudMusicIds: ["1809646618", "3361076230", "1859390262", "64126"],
+  cloudMusicIds: ["1809646618", "3361076230", "1859390262"],
 
   social: {
     github: "",

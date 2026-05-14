@@ -9,6 +9,23 @@ import { useToast } from './ToastProvider';
 import { AlertTriangle, FileText, Inbox, RefreshCw, Rocket, Settings, X } from 'lucide-react';
 import { siteConfig } from '../siteConfig';
 
+type PywebviewApi = {
+  minimize_window?: () => void;
+  maximize_window?: () => void;
+  close_window?: () => void;
+};
+
+type PywebviewWindow = Window & {
+  pywebview?: {
+    api?: PywebviewApi;
+  };
+};
+
+function getPywebviewApi() {
+  if (typeof window === 'undefined') return undefined;
+  return (window as PywebviewWindow).pywebview?.api;
+}
+
 export default function Navbar() {
   const [showNav, setShowNav] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -34,7 +51,7 @@ export default function Navbar() {
             localStorage.setItem('targetBlogPath', data.blogPath);
           }
         }
-      } catch (e) {
+      } catch {
         const path = localStorage.getItem('targetBlogPath') || "E:/Project/personalBlogweb";
         setTargetBlogPath(path);
       }
@@ -68,95 +85,100 @@ export default function Navbar() {
   ];
 
   const handleMinimize = () => {
-    if (typeof window !== 'undefined' && (window as any).pywebview?.api) {
-      (window as any).pywebview.api.minimize_window();
-    }
+    getPywebviewApi()?.minimize_window?.();
   };
   const handleMaximize = () => {
-    if (typeof window !== 'undefined' && (window as any).pywebview?.api) {
-      (window as any).pywebview.api.maximize_window();
-    }
+    getPywebviewApi()?.maximize_window?.();
   };
   const handleClose = () => {
-    if (typeof window !== 'undefined' && (window as any).pywebview?.api) {
-      (window as any).pywebview.api.close_window();
+    getPywebviewApi()?.close_window?.();
+  };
+
+  const flushPendingOperations = async (options: { reloadAfter?: boolean; reason?: string } = {}) => {
+    if (operations.length === 0) return true;
+
+    try {
+      showToast(options.reason || `正在准备发送 ${operations.length} 个任务...`, "info");
+
+      const configRes = await fetch(`/backend_config.json?t=${Date.now()}`);
+      const configData = await configRes.json();
+      const apiBase = `http://127.0.0.1:${configData.api_port}`;
+
+      for (const op of operations) {
+        let apiUrl = '';
+        let body = {};
+
+        switch (op.type) {
+          case 'sync_photowall':
+            apiUrl = `${apiBase}/api/gallery/sync`;
+            body = { albums: op.value };
+            break;
+          case 'sync_friends':
+            apiUrl = `${apiBase}/api/friends/sync`;
+            body = { friends: op.value };
+            break;
+          case 'sync_projects':
+            apiUrl = `${apiBase}/api/projects/sync`;
+            body = { projects: op.value };
+            break;
+          case 'CONFIG':
+            apiUrl = `${apiBase}/api/config/update`;
+            body = { updates: op.payload };
+            break;
+          // 🌟 这是关键匹配逻辑
+          case 'create_moment':
+            apiUrl = `${apiBase}/api/moments/save`;
+            body = op.payload;
+            break;
+          default:
+            apiUrl = `${apiBase}/api/drafts/sync_local`;
+            body = { operations: [op] };
+            break;
+        }
+
+        showToast(`正在请求后端: ${apiUrl}`, "info");
+
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+        if (!data.success) {
+          showToast(`任务执行失败: ${data.message}`, "error");
+          return false;
+        }
+      }
+
+      showToast("任务已全部执行，本地数据已写入！", "success");
+      clearOperations();
+      setIsOpBoxOpen(false);
+
+      if (options.reloadAfter) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
+
+      return true;
+    } catch (error: unknown) {
+      // 如果断网或报错，这里会强制提示
+      const message = error instanceof Error ? error.message : "未知错误";
+      showToast(`后端连接异常: ${message}`, "error");
+      return false;
     }
   };
 
   // 🌟 监控增强版更新逻辑
   const handleUpdateLocal = async () => {
-      if (operations.length === 0) {
-        showToast("队列中没有待处理的操作", "warning");
-        return;
-      }
+    if (operations.length === 0) {
+      showToast("队列中没有待处理的操作", "warning");
+      return;
+    }
 
-      try {
-        showToast(`正在准备发送 ${operations.length} 个任务...`, "info");
-
-        const configRes = await fetch(`/backend_config.json?t=${Date.now()}`);
-        const configData = await configRes.json();
-        const apiBase = `http://127.0.0.1:${configData.api_port}`;
-
-        for (const op of operations) {
-          let apiUrl = '';
-          let body = {};
-
-          switch (op.type) {
-            case 'sync_photowall':
-              apiUrl = `${apiBase}/api/gallery/sync`;
-              body = { albums: op.value };
-              break;
-            case 'sync_friends':
-              apiUrl = `${apiBase}/api/friends/sync`;
-              body = { friends: op.value };
-              break;
-            case 'sync_projects':
-              apiUrl = `${apiBase}/api/projects/sync`;
-              body = { projects: op.value };
-              break;
-            case 'CONFIG':
-              apiUrl = `${apiBase}/api/config/update`;
-              body = { updates: op.payload };
-              break;
-            // 🌟 这是关键匹配逻辑
-            case 'create_moment':
-              apiUrl = `${apiBase}/api/moments/save`;
-              body = op.payload;
-              break;
-            default:
-              apiUrl = `${apiBase}/api/drafts/sync_local`;
-              body = { operations: [op] };
-              break;
-          }
-
-          showToast(`正在请求后端: ${apiUrl}`, "info");
-
-          const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-          });
-
-          const data = await res.json();
-          if (!data.success) {
-            showToast(`任务执行失败: ${data.message}`, "error");
-            return;
-          }
-        }
-
-        showToast("任务已全部执行，本地数据已写入！", "success");
-        clearOperations();
-        setIsOpBoxOpen(false);
-
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-
-      } catch (error: any) {
-        // 如果断网或报错，这里会强制提示
-        showToast(`后端连接异常: ${error.message}`, "error");
-      }
-    };
+    await flushPendingOperations({ reloadAfter: true });
+  };
 
   const handleSyncBlogClick = () => {
     if (!targetBlogPath) {
@@ -173,6 +195,12 @@ export default function Navbar() {
     try {
       const configRes = await fetch(`/backend_config.json?t=${Date.now()}`);
       const configData = await configRes.json();
+
+      const flushed = await flushPendingOperations({
+        reason: operations.length > 0 ? "同步前先写入待处理操作..." : undefined,
+      });
+      if (!flushed) return;
+
       showToast("正在镜像数据至目标项目，请稍候...", "info");
 
       const res = await fetch(`http://127.0.0.1:${configData.api_port}/api/sync/execute`, {
@@ -187,7 +215,7 @@ export default function Navbar() {
       } else {
         showToast(`同步失败: ${data.message}`, "error");
       }
-    } catch (error) {
+    } catch {
       showToast("无法连接到 Python 桌面核心引擎进行同步", "error");
     }
   };
