@@ -3,13 +3,13 @@ setlocal
 chcp 65001 >nul
 
 set "ROOT_DIR=%~dp0"
-set "MANAGER_DIR=%ROOT_DIR%my-blog-manager"
+set "MANAGER_DIR=%ROOT_DIR%..\my-blog-manager"
 
 echo === Local Blog Manager Launcher ===
 
 if not exist "%MANAGER_DIR%\run_me.py" (
   echo ERROR: Cannot find "%MANAGER_DIR%\run_me.py".
-  echo Please run this file from the personalBlogweb repository root.
+  echo Expected sibling manager checkout: "%MANAGER_DIR%"
   pause
   exit /b 1
 )

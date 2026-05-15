@@ -11,7 +11,10 @@ import remarkMath from 'remark-math';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
+import { markdownSanitizeSchema } from '../../lib/markdownSanitize';
 import 'highlight.js/styles/atom-one-dark.css';
 import 'katex/dist/katex.min.css';
 
@@ -36,9 +39,12 @@ export default async function AboutPage() {
       .use(remarkParse)
       .use(remarkMath)
       .use(remarkRehype, { allowDangerousHtml: true })
+      .use(rehypeRaw)
+      .use(rehypeSanitize, markdownSanitizeSchema)
+      // @ts-expect-error rehype-highlight accepts this runtime option, but its unified overload is narrow.
       .use(rehypeHighlight, { ignoreMissing: true })
       .use(rehypeKatex)
-      .use(rehypeStringify, { allowDangerousHtml: true })
+      .use(rehypeStringify)
       .process(content);
 
     contentHtml = processedContent.toString();

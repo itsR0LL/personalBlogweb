@@ -15,6 +15,15 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+On Windows, you can also double-click:
+
+```text
+start_all.bat
+stop_all.bat
+```
+
+These scripts start and stop only the public site in this folder.
+
 ## Content
 
 - Edit global profile and theme settings in `siteConfig.ts`.
@@ -76,16 +85,26 @@ npm run build
 
 ## Manager App
 
-The original webmaster manager is kept as a separate app under
-`my-blog-manager/`. Do not copy it into the public site's `app/manager`
-route. It is currently intended for local use, not as a Vercel-hosted online
-admin panel.
+The local manager has been split out of this public site. The expected sibling
+checkout is:
 
-Double-click `start-local-manager.bat` from the repository root to start the
-local manager. The launcher starts the Next.js manager UI and the local Python
-backend used by save, sync, and deploy controls. The Vercel manager project was
-removed because those controls depend on `127.0.0.1` and are not usable as a
-standalone online CMS yet.
+```text
+E:\Project\my-blog-manager
+```
+
+Do not copy it into this public site's `app/manager` route, and do not deploy it
+to Vercel as an online CMS. It is a local high-privilege tool that writes to the
+public blog path configured in its settings page.
+
+Double-click `start-local-manager.bat` from this folder to start the sibling
+manager, or use `E:\Project\my-blog-manager\start_all.bat` directly. The
+manager launcher starts its own Next.js UI and local Python backend. Runtime
+files such as `public/backend_config.json`, `manager_data/runtime_config.json`,
+and `data/deploy_config.json` live in the manager repository and must remain
+untracked.
+
+Run `npm run secret:scan` before committing changes that touch configuration,
+runtime files, or documentation with example secrets.
 
 ## Attribution
 

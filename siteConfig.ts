@@ -1,14 +1,14 @@
 // siteConfig.ts - Blog Manager placeholder configuration.
 
 export const siteConfig = {
-  title: "R0L1_の小家",
+  title: "",
   faviconUrl: "https://v1.lskypro.com/thumbnails/01f4a4584bace1a3b670c6791a0f5f57.png",
   authorName: "R0L1_",
   bio: "",
 
-  navTitle: "R0L1_",
-  navSuffix: "·",
-  navAfter: "の小家",
+  navTitle: "",
+  navSuffix: "",
+  navAfter: "",
 
   avatarUrl: "https://v1.lskypro.com/thumbnails/01f4a4584bace1a3b670c6791a0f5f57.png",
 

@@ -6,11 +6,11 @@ Update it before changing content ownership or deployment boundaries.
 ## Current Recovery State
 
 - Public site target: the repository root Next.js app.
-- Manager target: the local standalone Next.js app in `my-blog-manager/`.
+- Manager target: the sibling private local app at `E:\Project\my-blog-manager`.
 - Stable baseline: `7a0f035 chore: baseline before anime blog polish`.
-- Public-site Vercel deployment excludes `my-blog-manager/`, local logs, `.env*`, `.next/`, and `node_modules/` through root `.vercelignore`.
+- Public-site Vercel deployment excludes local logs, `.env*`, `.next/`, and `node_modules/` through root `.vercelignore`. A defensive `my-blog-manager/` exclude may remain, but the manager directory is no longer part of this checkout.
 - The former `personalblog-manager` Vercel project has been removed. The manager is not currently deployed online.
-- The root public site does not own `/manager`; the manager UI is the standalone app root in `my-blog-manager/app/page.tsx` and should be opened through the local launcher.
+- The root public site does not own `/manager`; the manager UI is the sibling app root and should be opened through the local launcher.
 - `/api/manager/*` is intentionally not part of the recovered public site.
 
 ## Public Site Content Map
@@ -28,7 +28,7 @@ Update it before changing content ownership or deployment boundaries.
 | About | `/about` | `app/about/about.md`, `siteConfig.ts` |
 | Music | `/music` and global player | `siteConfig.cloudMusicIds` |
 | Global shell | all routes | `siteConfig.ts`, `components/Navbar.tsx`, `app/layout.tsx` |
-| AI chat | `/api/chat` | `siteConfig.geminiConfig`, `GOOGLE_API_KEY` |
+| AI chat | `/api/chat` | `siteConfig.geminiConfig`, `GEMINI_API_KEY` |
 
 ## Future Manager Coverage
 
@@ -57,13 +57,13 @@ site changed correctly after save, not only that the manager UI saved data.
 ## Manager Rebuild Rules
 
 - Do not depend on long chat memory for project structure. Read this file and the source files before edits.
-- Do not merge `my-blog-manager/` into the public root without a scoped migration plan.
+- Do not merge `my-blog-manager/` back into the public root without a scoped migration plan.
 - Do not recreate `app/manager/page.tsx` in the public root unless there is an explicit reverse-proxy or rewrite plan.
-- Keep the manager as the standalone app under `my-blog-manager/`.
-- Use `start-local-manager.bat` for local manager testing and maintenance.
+- Keep the manager as the standalone sibling app at `E:\Project\my-blog-manager`.
+- Use `start-local-manager.bat` as a convenience proxy, or run the sibling manager's own `start_all.bat`.
 - Do not add manager write APIs back until their module scope and acceptance checks are documented.
-- Current manager write/deploy controls call the local Python backend at `127.0.0.1` using `my-blog-manager/public/backend_config.json`; keep maintenance local until an authenticated online-CMS plan replaces this dependency.
-- Do not expose secrets to the browser. Server routes must read secrets only from environment variables.
+- Current manager write/deploy controls call the local Python backend at `127.0.0.1` using launcher-generated `public/backend_config.json` inside the manager repository; that file contains dynamic ports and a short-lived `manager_token`, and local write APIs require `X-Manager-Token`.
+- Do not expose secrets to the browser. Server routes must read secrets only from environment variables or ignored local runtime config such as `manager_data/runtime_config.json` inside the manager repository.
 - Do not allow arbitrary file writes. Manager writes must be allowlisted by path or pattern.
 - Every manager module needs a public-route verification checklist.
 

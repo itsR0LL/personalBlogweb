@@ -5,6 +5,16 @@ import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
 import ChatterBoard from './ChatterBoard';
 
+type ChatterSummary = {
+  slug: string;
+  title: string;
+  date: string;
+  tags: string[];
+  mood: string;
+  cover: string;
+  content: string;
+};
+
 export const metadata = {
   title: "Build Notes | R0L1 Studio",
   description: "Short notes and idea fragments",
@@ -12,7 +22,7 @@ export const metadata = {
 
 export default function ChatterPage() {
   const chattersDirectory = path.join(process.cwd(), 'chatters');
-  let chatters = [];
+  let chatters: ChatterSummary[] = [];
 
   try {
     if (!fs.existsSync(chattersDirectory)) {
@@ -30,7 +40,7 @@ export default function ChatterPage() {
         slug,
         title: data.title || '',
         date: data.date || 'Unknown time',
-        tags: data.tags || [],
+        tags: Array.isArray(data.tags) ? data.tags : data.tags ? [String(data.tags)] : [],
         mood: data.mood || '',
         cover: data.cover || '',
         content: content.replace(/^#+ .*\n/m, ''),

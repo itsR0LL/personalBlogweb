@@ -8,8 +8,11 @@ import remarkParse from 'remark-parse';
 import remarkMath from 'remark-math';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import rehypeKatex from 'rehype-katex';
+import { markdownSanitizeSchema } from '../../../lib/markdownSanitize';
 
 // 引入高亮主题
 import 'highlight.js/styles/atom-one-dark.css';
@@ -59,9 +62,12 @@ async function getPostData(slug: string) {
     .use(remarkParse)
     .use(remarkMath)
     .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeRaw)
+    .use(rehypeSanitize, markdownSanitizeSchema)
+    // @ts-expect-error rehype-highlight accepts this runtime option, but its unified overload is narrow.
     .use(rehypeHighlight, { ignoreMissing: true })
     .use(rehypeKatex)
-    .use(rehypeStringify, { allowDangerousHtml: true })
+    .use(rehypeStringify)
     .process(content);
 
   return {

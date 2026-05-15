@@ -57,7 +57,7 @@ Python FastAPI 后端
 
 - 主站不再拥有 `/manager`；除非未来明确做反向代理，否则主站 `/manager` 应该返回 404。
 - `/admin` 不是管理端入口，也不要在 `my-blog-manager` 里新增自写 `/admin` dashboard；管理端使用原版项目根页面。
-- `my-blog-manager` 的保存、同步、部署按钮当前通过 `public/backend_config.json` 调用本机 `127.0.0.1` 上的 Python 后端。
+- `my-blog-manager` 的保存、同步、部署按钮当前通过 launcher 生成的 `public/backend_config.json` 调用本机 `127.0.0.1` 上的 Python 后端；该文件和 `manager_data/` 里的本地密钥配置不要提交。
 - 因此线上 Vercel 管理端已经移除；如果未来要让线上管理端直接写入 GitHub，需要先做登录鉴权，并把写入逻辑改造成可控的 Vercel Serverless + GitHub API 或可访问后端。
 - 当前 Python 后端 CORS 只允许 `localhost` 和 `127.0.0.1` 来源；不要为了临时线上访问直接扩大到所有 `*.vercel.app`。
 - 管理端如启用 AI 助手或天气能力，先按本地 `.env` 方式配置，不要把 Key 写进仓库。
@@ -275,3 +275,15 @@ Project -> Settings -> Domains
 - Vercel 环境变量：https://vercel.com/docs/environment-variables
 - Next.js 静态导出：https://nextjs.org/docs/app/guides/static-exports
 - GitHub Pages：https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages
+## Current Split Note
+
+The public site and local manager are now physically separated:
+
+```text
+Public site: E:\Project\personalBlogweb
+Manager:     E:\Project\my-blog-manager
+```
+
+Deploy only the public site repository to Vercel. The manager remains a
+private local-only tool and should be started from its own `start_all.bat` or
+through the public site's `start-local-manager.bat` proxy.
