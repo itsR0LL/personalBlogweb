@@ -65,7 +65,7 @@ export default function BackgroundSlider() {
           key={`${group}-${img}`}
           data-background-slide={`${group}-${i + 1}`}
           data-background-active={isCurrent ? "true" : "false"}
-          className="absolute inset-0 transition-opacity duration-[2400ms] ease-in-out transform-gpu"
+          className="absolute inset-0 transition-opacity duration-[900ms] ease-in-out transform-gpu"
           style={{
             backgroundImage: `url(${img})`,
             backgroundSize: "cover",

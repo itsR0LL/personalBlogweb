@@ -16,6 +16,7 @@ import { ToastProvider } from '../components/ToastProvider';
 
 import LatestPostsCarousel from '../components/LatestPostsCarousel';
 import LatestChatterCarousel from '../components/LatestChatterCarousel';
+import GsapHomeIntro from '../components/motion/GsapHomeIntro';
 
 function formatUpdateTime(dateString: string) {
   if (!dateString || dateString === '1970-01-01') return '刚刚更新';
@@ -92,13 +93,15 @@ export default function Home() {
         <Navbar />
         <PageTransition>
           {/* 🌟 调整整体容器的内边距，适应手机端更小的屏幕 */}
-          <div className="w-full max-w-6xl mx-auto mt-20 sm:mt-28 px-3 sm:px-6 lg:px-10 relative z-10 overflow-x-clip">
-            <SearchBar posts={allPosts} />
+          <GsapHomeIntro className="w-full max-w-6xl mx-auto mt-20 sm:mt-28 px-3 sm:px-6 lg:px-10 relative z-10 overflow-x-clip">
+            <div data-home-reveal>
+              <SearchBar posts={allPosts} />
+            </div>
 
             <main className="flex flex-col gap-4 sm:gap-6 w-full mt-4 sm:mt-6">
 
               {/* 第一行：个人信息 + 播放器 */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 w-full">
+              <div data-home-reveal className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 w-full">
                 {/* 手机上占满1列，电脑上占7列 */}
                 <div className="col-span-1 lg:col-span-7 flex flex-col min-w-0">
                     <ProfileCard postCount={allPosts.length} chatterCount={chatterCount} photoCount={realPhotoCount}/>
@@ -110,10 +113,10 @@ export default function Home() {
               </div>
 
               {/* 歌词栏 */}
-              <div className="hidden sm:block w-full mt-[-10px]"><LyricBar/></div>
+              <div data-home-reveal className="hidden sm:block w-full mt-[-10px]"><LyricBar/></div>
 
               {/* 第二行：文章轮播 + 照片墙 + 说说 + 主题切换 */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 w-full">
+              <div data-home-reveal className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 w-full">
 
                 {/* 左侧：文章轮播 (电脑端占4列，手机端排最上面) */}
                 <div className="col-span-1 lg:col-span-4 flex flex-col min-h-[300px] sm:min-h-[340px] min-w-0">
@@ -124,9 +127,9 @@ export default function Home() {
                 <div className="col-span-1 lg:col-span-8 flex flex-col gap-4 sm:gap-6 min-w-0">
 
                   {/* 照片墙大海报 */}
-                  <Link href="/photowall" className="w-full rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl overflow-hidden transition-all duration-700 hover:scale-[1.02] relative group min-h-[170px] sm:min-h-[220px] flex-shrink-0">
-                    <img src={latestAlbum.cover} alt={latestAlbum.title} className="w-full h-full absolute inset-0 object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"/>
-                    <div className="absolute inset-0 bg-black/30 dark:bg-black/50 group-hover:bg-black/10 transition-colors duration-500"></div>
+                  <Link href="/photowall" className="w-full rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl overflow-hidden transition-transform duration-700 hover:scale-[1.01] relative group min-h-[170px] sm:min-h-[220px] flex-shrink-0">
+                    <img src={latestAlbum.cover} alt={latestAlbum.title} className="w-full h-full absolute inset-0 object-cover transition-transform duration-1000 group-hover:scale-[1.035] opacity-90"/>
+                    <div className="absolute inset-0 bg-black/30 dark:bg-black/50 group-hover:bg-black/10 transition-colors duration-700"></div>
                     <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 right-6">
                       <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 underline decoration-pink-400">{latestAlbum.title}</h3>
                       <p className="text-white/90 text-sm sm:text-lg line-clamp-1">{latestAlbum.description}</p>
@@ -154,9 +157,9 @@ export default function Home() {
               </div>
 
               {/* 底部数据面板 */}
-              <div className="hidden sm:block w-full mt-4"><SiteDashboard/></div>
+              <div data-home-reveal className="hidden sm:block w-full mt-4"><SiteDashboard/></div>
             </main>
-          </div>
+          </GsapHomeIntro>
         </PageTransition>
       </div>
     </ToastProvider>

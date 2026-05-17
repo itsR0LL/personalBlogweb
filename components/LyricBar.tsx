@@ -58,7 +58,7 @@ export default function LyricBar() {
       <div className="w-full rounded-2xl sm:rounded-3xl bg-slate-900/80 dark:bg-slate-950/90 backdrop-blur-xl border border-white/10 shadow-2xl p-4 sm:p-5 flex items-center justify-between transition-all duration-700 hover:shadow-indigo-500/20 group h-16 sm:h-20">
 
         {/* 1. 音频波形动态部分：改用统一渲染逻辑实现过渡 */}
-        <div className="hidden sm:flex items-end justify-center gap-[4px] h-8 w-16">
+        <div data-ambient-motion="true" className="hidden sm:flex items-end justify-center gap-[4px] h-8 w-16">
           {waves.map((wave, index) => (
             <div
               key={index}
@@ -86,7 +86,7 @@ export default function LyricBar() {
 
         {/* 3. 右侧音乐图标 */}
         <div className="hidden sm:flex w-16 justify-end">
-          <svg className={`w-6 h-6 text-indigo-400/50 transition-all duration-500 ${isPlaying ? 'animate-bounce' : 'opacity-30'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg data-ambient-motion="true" className={`w-6 h-6 text-indigo-400/50 transition-all duration-500 ${isPlaying ? 'animate-bounce' : 'opacity-30'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
           </svg>
         </div>

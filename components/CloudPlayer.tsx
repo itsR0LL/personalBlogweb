@@ -92,12 +92,13 @@ export default function CloudPlayer() {
       {/* 🌟 终极逻辑：在外层 Div 直接绑定 onClick 进行页面跳转 */}
       <div
         onClick={() => router.push('/music')}
-        className="h-full w-full rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-4 sm:p-6 flex flex-col justify-between transition-all duration-700 hover:scale-[1.02] relative group overflow-hidden cursor-pointer max-w-full min-h-[260px] sm:min-h-0"
+        className="h-full w-full rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-4 sm:p-6 flex flex-col justify-between transition-[transform,color,background-color,border-color] duration-700 hover:scale-[1.01] relative group overflow-hidden cursor-pointer max-w-full min-h-[260px] sm:min-h-0"
       >
         <div className={`hidden sm:block absolute -top-20 -right-20 w-48 h-48 bg-indigo-500/20 blur-[50px] rounded-full transition-opacity duration-1000 ${isPlaying ? 'opacity-100' : 'opacity-30'}`}></div>
 
         <div className="flex items-center gap-3 sm:gap-5 relative z-10 mb-4 sm:mb-6 mt-1 sm:mt-2 min-w-0">
           <div
+            data-ambient-motion="true"
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-white/50 shadow-lg flex-shrink-0 overflow-hidden relative animate-[spin_6s_linear_infinite]"
             style={{
               animationPlayState: isPlaying ? 'running' : 'paused',
@@ -146,7 +147,7 @@ export default function CloudPlayer() {
                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
             </button>
 
-            <button onClick={safeTogglePlay} className="w-11 h-11 sm:w-12 sm:h-12 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-600 hover:scale-110 transition-all border-2 border-white/50 dark:border-slate-600 relative z-20">
+            <button onClick={safeTogglePlay} className="w-11 h-11 sm:w-12 sm:h-12 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-600 hover:scale-105 transition-[transform,color,background-color,border-color] duration-300 border-2 border-white/50 dark:border-slate-600 relative z-20">
               {isPlaying ? <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> : <svg className="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>}
             </button>
 

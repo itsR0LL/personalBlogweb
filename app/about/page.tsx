@@ -20,6 +20,7 @@ import 'katex/dist/katex.min.css';
 
 import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
+import BlogReveal from '../../components/motion/BlogReveal';
 import { siteConfig } from '../../siteConfig';
 import Comments from '../../components/Comments';
 
@@ -58,12 +59,12 @@ export default async function AboutPage() {
 
       <PageTransition>
         {/* 🌟 核心修改：缩紧手机端的主容器宽度和顶部间距 */}
-        <main className="w-[95%] md:w-[90%] max-w-4xl mx-auto mt-24 md:mt-28 relative z-10">
-          <div className="bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-[40px] shadow-2xl border border-white/40 dark:border-white/10 overflow-hidden transition-colors duration-700 relative">
+        <BlogReveal as="main" preset="article" className="w-[95%] md:w-[90%] max-w-4xl mx-auto mt-24 md:mt-28 relative z-10">
+          <div data-blog-reveal className="bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-[40px] shadow-2xl border border-white/40 dark:border-white/10 overflow-hidden transition-colors duration-700 relative">
 
             {/* 🌟 核心修改：封面图在手机上稍微变矮一点，节约屏幕空间 */}
             <div className="w-full h-40 sm:h-48 md:h-64 relative bg-slate-200 dark:bg-slate-700 overflow-hidden group">
-              <img src={coverImage} alt="About Hero" className="w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-105" />
+              <img src={coverImage} alt="About Hero" className="w-full h-full object-cover opacity-90 transition-transform duration-[1200ms] group-hover:scale-[1.035]" />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
             </div>
 
@@ -132,7 +133,7 @@ export default async function AboutPage() {
 
             </div>
           </div>
-        </main>
+        </BlogReveal>
       </PageTransition>
     </div>
   );

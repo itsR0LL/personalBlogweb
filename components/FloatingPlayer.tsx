@@ -39,6 +39,7 @@ export default function FloatingPlayer() {
 
         {/* 旋转的光碟封面 */}
         <div
+          data-ambient-motion="true"
           className="w-10 h-10 rounded-full border border-white/50 shadow-sm flex-shrink-0 overflow-hidden relative animate-[spin_6s_linear_infinite] pointer-events-none"
           style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
         >
@@ -58,7 +59,7 @@ export default function FloatingPlayer() {
           <button
             onClick={(e) => { e.stopPropagation(); togglePlay(); }}
             onPointerDown={(e) => e.stopPropagation()}
-            className="w-8 h-8 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform cursor-pointer"
+            className="w-8 h-8 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-md hover:scale-105 transition-transform duration-300 cursor-pointer"
           >
             {isPlaying ? <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> : <svg className="w-3.5 h-3.5 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>}
           </button>

@@ -1,5 +1,6 @@
 import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
+import BlogReveal from '../../components/motion/BlogReveal';
 import ProjectsBoard from './ProjectsBoard';
 
 export const metadata = {
@@ -12,9 +13,11 @@ export default function ProjectsPage() {
     <div className="min-h-screen relative pb-20">
       <Navbar />
       <PageTransition>
-        <div className="mt-28">
-          <ProjectsBoard />
-        </div>
+        <BlogReveal preset="list" className="mt-28">
+          <div data-blog-reveal>
+            <ProjectsBoard />
+          </div>
+        </BlogReveal>
       </PageTransition>
     </div>
   );

@@ -33,6 +33,7 @@ export default function SidebarLyric() {
       <div className="flex items-center gap-4 mb-4">
         {/* 旋转封面 */}
         <div
+          data-ambient-motion="true"
           className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 shadow-md animate-[spin_6s_linear_infinite]"
           style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
         >

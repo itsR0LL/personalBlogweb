@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Moon, Palette, Sun, X } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
+import { motionTransition, motionVariants } from '../lib/motion';
 
 export default function FloatingThemePanel() {
   const { isDark, toggleTheme } = useTheme();
@@ -19,10 +20,12 @@ export default function FloatingThemePanel() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 14, scale: 0.96, transformOrigin: 'bottom left' }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 14, scale: 0.96 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
+            variants={motionVariants.popover}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={motionTransition.base}
+            style={{ transformOrigin: 'bottom left' }}
             className="w-[calc(100vw-2rem)] max-w-[18rem] rounded-3xl bg-white/80 dark:bg-slate-900/85 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-2xl p-4 text-slate-800 dark:text-white"
           >
             <div className="flex items-start justify-between gap-3">
@@ -48,7 +51,7 @@ export default function FloatingThemePanel() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="mt-4 w-full h-11 rounded-2xl bg-indigo-500 text-white text-sm font-black shadow-lg shadow-indigo-500/25 hover:bg-indigo-600 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              className="mt-4 w-full h-11 rounded-2xl bg-indigo-500 text-white text-sm font-black shadow-lg shadow-indigo-500/25 hover:bg-indigo-600 active:scale-[0.98] transition-[transform,color,background-color] duration-[360ms] flex items-center justify-center gap-2"
             >
               {isDark ? <Sun size={18} strokeWidth={2.4} /> : <Moon size={18} strokeWidth={2.4} />}
               {nextModeLabel}
@@ -62,7 +65,7 @@ export default function FloatingThemePanel() {
         onClick={() => setIsOpen((open) => !open)}
         aria-label={isOpen ? '收起氛围控制台' : '打开氛围控制台'}
         aria-expanded={isOpen}
-        className={`h-12 w-12 sm:h-14 sm:w-14 rounded-full flex items-center justify-center shadow-2xl backdrop-blur-xl border border-white/50 dark:border-white/10 transition-all duration-300 hover:scale-110 active:scale-95 ${
+        className={`h-12 w-12 sm:h-14 sm:w-14 rounded-full flex items-center justify-center shadow-2xl backdrop-blur-xl border border-white/50 dark:border-white/10 transition-[transform,color,background-color,border-color] duration-[360ms] hover:scale-[1.03] active:scale-95 ${
           isDark
             ? 'bg-slate-900/85 text-indigo-100 shadow-indigo-950/30'
             : 'bg-white/80 text-amber-500 shadow-amber-300/30'

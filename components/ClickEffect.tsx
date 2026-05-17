@@ -1,10 +1,18 @@
 "use client";
-import { useEffect, useRef } from 'react';
+import { useReducedMotion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 
 export default function ClickEffect() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const reduceMotion = useReducedMotion();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted || reduceMotion) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -66,6 +74,8 @@ export default function ClickEffect() {
 
     window.addEventListener('click', handleClick);
 
+    let frameId = 0;
+
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -81,19 +91,23 @@ export default function ClickEffect() {
           i--;
         }
       }
-      requestAnimationFrame(animate);
+      frameId = requestAnimationFrame(animate);
     };
     animate();
 
     return () => {
+      cancelAnimationFrame(frameId);
       window.removeEventListener('resize', resize);
       window.removeEventListener('click', handleClick);
     };
-  }, []);
+  }, [isMounted, reduceMotion]);
+
+  if (isMounted && reduceMotion) return null;
 
   return (
     <canvas
       ref={canvasRef}
+      data-ambient-motion="true"
       className="fixed inset-0 pointer-events-none z-[9999]"
     />
   );

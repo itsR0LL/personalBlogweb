@@ -107,7 +107,7 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: a
                 initial={{ opacity: 0, y: -10, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
                 className="absolute top-full left-0 right-0 mt-3 bg-white/80 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden max-h-[360px] overflow-y-auto z-[100]"
               >
                 {searchResults.length > 0 ? (
@@ -180,7 +180,7 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: a
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.58, ease: [0.16, 1, 0.3, 1] }}
             className="relative w-full"
           >
             <style dangerouslySetInnerHTML={{ __html: `
@@ -198,13 +198,13 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: a
               {/* 🌟 核心魔法 3：强制手机端 grid-cols-2 双列显示，减小 gap */}
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 pt-4 pb-10">
                 {timelinePosts.map((post, idx) => (
-                  <motion.div key={post.slug} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3, delay: idx * 0.05 }}>
+                  <motion.div key={post.slug} initial={{ opacity: 0, y: 12, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.5, delay: idx * 0.04, ease: [0.16, 1, 0.3, 1] }}>
                     <div className="bg-white/60 dark:bg-slate-800/70 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 rounded-2xl md:rounded-3xl overflow-hidden shadow-lg flex flex-col h-full group relative hover:-translate-y-1 transition-transform duration-300">
 
                       <Link href={`/posts/${post.slug}`} className="block flex-1 flex flex-col cursor-pointer">
                         {/* 🌟 图片高度自适应：手机变矮，电脑变高 */}
                         <div className="relative h-28 sm:h-36 md:h-40 overflow-hidden">
-                          <img src={post.cover} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                          <img src={post.cover} alt={post.title} className="w-full h-full object-cover transition-transform duration-[1100ms] group-hover:scale-[1.04]" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                           {/* 🌟 日期标签微缩 */}
                           <span className="absolute bottom-2 left-2 md:bottom-3 md:left-4 text-white/90 text-[9px] md:text-xs font-mono font-bold bg-black/40 backdrop-blur-sm px-1.5 py-0.5 md:px-2 md:py-1 rounded flex items-center gap-1">
@@ -256,7 +256,7 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: a
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
             className="relative overflow-hidden p-2 md:p-10 min-h-[500px]"
           >
             <div className="absolute border-opacity-20 border-indigo-500 dark:border-indigo-400/20 h-full border-2 left-1/2 transform -translate-x-1/2 rounded-full transition-colors duration-1000"></div>

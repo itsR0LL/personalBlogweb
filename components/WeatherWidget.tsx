@@ -49,7 +49,7 @@ export default function WeatherWidget() {
   };
 
   return (
-    <div className="w-full h-full rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-6 flex flex-col justify-center transition-all duration-700 hover:scale-[1.02] group relative overflow-hidden">
+    <div className="w-full h-full rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-6 flex flex-col justify-center transition-[transform,color,background-color,border-color] duration-700 hover:scale-[1.01] group relative overflow-hidden">
       <div className={`absolute -right-6 -top-6 w-32 h-32 blur-3xl rounded-full transition-colors duration-700 ${weather?.isMock ? 'bg-amber-500/20 group-hover:bg-amber-500/40' : 'bg-indigo-500/20 group-hover:bg-indigo-500/40'}`}></div>
       {loading ? (
          <div className="flex flex-col items-center gap-3 text-slate-500 w-full justify-center relative z-10">
@@ -68,7 +68,7 @@ export default function WeatherWidget() {
               <span className="text-xs font-bold text-slate-500">{weather.text}</span>
             </div>
           </div>
-          <div className="relative z-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-md">
+          <div className="relative z-10 group-hover:scale-105 transition-transform duration-500 drop-shadow-md">
             {getWeatherIcon(weather.icon)}
           </div>
         </div>

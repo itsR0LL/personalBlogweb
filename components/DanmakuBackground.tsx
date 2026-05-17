@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { siteConfig } from '../siteConfig';
 
 interface DanmakuItem {
@@ -13,8 +14,15 @@ interface DanmakuItem {
 
 export default function DanmakuBackground() {
   const [danmakus, setDanmakus] = useState<DanmakuItem[]>([]);
+  const reduceMotion = useReducedMotion();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted || reduceMotion) return;
     const list = siteConfig.danmakuList || [];
     if (list.length === 0) return;
 
@@ -33,12 +41,14 @@ export default function DanmakuBackground() {
       });
     }
     setDanmakus(generatedDanmakus);
-  }, []);
+  }, [isMounted, reduceMotion]);
+
+  if (isMounted && reduceMotion) return null;
 
   return (
     // 🌟 终极限制：去掉了 bottom-0，换成了 h-[30vh] 强制锁死容器高度！
     // 并且加上 z-0 确保它在卡片矩阵的后面
-    <div className="fixed top-28 h-[30vh] left-0 right-0 overflow-hidden pointer-events-none z-0">
+    <div data-ambient-motion="true" className="fixed top-28 h-[30vh] left-0 right-0 overflow-hidden pointer-events-none z-0">
       {danmakus.map((item) => (
         <div
           key={item.id}

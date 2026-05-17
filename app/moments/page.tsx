@@ -3,6 +3,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
+import BlogReveal from '../../components/motion/BlogReveal';
 import MomentList from './MomentList';
 import { siteConfig } from '../../siteConfig';
 
@@ -47,11 +48,15 @@ export default function MomentsPage() {
     <div className="min-h-screen relative pb-10 flex flex-col">
       <Navbar />
       <PageTransition className="flex-1 flex flex-col">
-        <MomentList
-          moments={allMoments}
-          authorName={siteConfig.authorName}
-          avatarUrl={siteConfig.avatarUrl}
-        />
+        <BlogReveal preset="list" className="flex-1 flex flex-col">
+          <div data-blog-reveal className="flex-1 flex flex-col">
+            <MomentList
+              moments={allMoments}
+              authorName={siteConfig.authorName}
+              avatarUrl={siteConfig.avatarUrl}
+            />
+          </div>
+        </BlogReveal>
       </PageTransition>
     </div>
   );

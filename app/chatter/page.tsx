@@ -3,6 +3,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
+import BlogReveal from '../../components/motion/BlogReveal';
 import ChatterBoard from './ChatterBoard';
 
 type ChatterSummary = {
@@ -54,7 +55,11 @@ export default function ChatterPage() {
     <div className="min-h-screen relative pb-10">
       <Navbar />
       <PageTransition>
-        <ChatterBoard chatters={chatters} />
+        <BlogReveal preset="list">
+          <div data-blog-reveal>
+            <ChatterBoard chatters={chatters} />
+          </div>
+        </BlogReveal>
       </PageTransition>
     </div>
   );

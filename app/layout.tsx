@@ -13,6 +13,8 @@ import FloatingThemePanel from "../components/FloatingThemePanel";
 import SplashScreen from "../components/SplashScreen";
 import CyberCat from '../components/CyberCat';
 import DanmakuBackground from '../components/DanmakuBackground';
+import MotionProvider from '../components/MotionProvider';
+import ThemeTransitionVeil from '../components/motion/ThemeTransitionVeil';
 
 type BackgroundVisualConfig = {
   backgroundBlurPx?: number;
@@ -80,17 +82,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
 
-      <body className="w-full overflow-x-hidden min-h-full flex flex-col relative transition-colors duration-1000 bg-slate-50 dark:bg-slate-950 font-serif">
+      <body className="w-full overflow-x-hidden min-h-full flex flex-col relative transition-colors duration-[900ms] bg-slate-50 dark:bg-slate-950 font-serif">
         <ThemeProvider>
+          <MotionProvider>
 
           <SplashScreen />
 
           <MusicProvider>
-            <div id="app-mount-root" className="flex-1 flex flex-col transition-opacity duration-1000">
+            <div id="app-mount-root" className="flex-1 flex flex-col transition-opacity duration-[900ms]">
               <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
                 <BackgroundSlider />
                 <div
-                  className="absolute inset-0 z-[-9] opacity-100 dark:opacity-0 transition-opacity duration-1000"
+                  className="absolute inset-0 z-[-9] opacity-100 dark:opacity-0 transition-opacity duration-[900ms]"
                   style={{
                     backgroundColor: `rgb(255 255 255 / ${backgroundOverlayLight})`,
                     backdropFilter: `blur(${backgroundBlurPx}px)`,
@@ -98,14 +101,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   }}
                 />
                 <div
-                  className="absolute inset-0 z-[-9] opacity-0 dark:opacity-100 transition-opacity duration-1000"
+                  className="absolute inset-0 z-[-9] opacity-0 dark:opacity-100 transition-opacity duration-[900ms]"
                   style={{
                     backgroundColor: `rgb(15 23 42 / ${backgroundOverlayDark})`,
                   }}
                 />
 
                 <div
-                  className="absolute inset-0 z-[-8] mix-blend-color transition-opacity duration-1000 transform-gpu"
+                  className="absolute inset-0 z-[-8] mix-blend-color transition-opacity duration-[900ms] transform-gpu"
                   style={{
                     background: `linear-gradient(-45deg, ${siteConfig.themeColors.join(', ')})`,
                     backgroundSize: '400% 400%',
@@ -144,6 +147,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </div>
 
               <FloatingThemePanel />
+              <ThemeTransitionVeil />
 
               {/* 隐藏手机端点击粒子 */}
               <div className="hidden md:block">
@@ -163,6 +167,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <div className="hidden md:block">
             <CyberCat />
           </div>
+          </MotionProvider>
 
         </ThemeProvider>
       </body>

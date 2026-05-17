@@ -4,6 +4,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import {
   Disc3,
   MessageSquare,
@@ -26,6 +28,8 @@ import Comments from '../../components/Comments';
 import { LyricLine, MusicSong, useMusic } from '../../components/MusicProvider';
 
 type MusicTab = 'lyrics' | 'playlist';
+
+gsap.registerPlugin(useGSAP);
 
 const fallbackCover = 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop';
 
@@ -58,6 +62,8 @@ export default function MusicPage() {
     duration,
     currentLyric,
     isLoading,
+    loadError,
+    skippedSongCount,
     togglePlay,
     nextSong,
     prevSong,
@@ -72,8 +78,10 @@ export default function MusicPage() {
     toggleMute,
   } = useMusic();
 
+  const musicPageRef = useRef<HTMLDivElement>(null);
   const lyricContainerRef = useRef<HTMLDivElement>(null);
   const activeLyricRef = useRef<HTMLButtonElement>(null);
+  const hasPlayedEntrance = useRef(false);
   const [activeTab, setActiveTab] = useState<MusicTab>('lyrics');
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -98,6 +106,60 @@ export default function MusicPage() {
     const scrollTarget = activeItem.offsetTop - container.offsetHeight / 2 + activeItem.offsetHeight / 2;
     container.scrollTo({ top: scrollTarget, behavior: 'smooth' });
   }, [activeLyricIndex, activeTab]);
+
+  useGSAP(
+    () => {
+      const root = musicPageRef.current;
+      if (!root) return;
+
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const panels = gsap.utils.toArray<HTMLElement>("[data-music-reveal]", root);
+      if (!panels.length) return;
+
+      const timeline = gsap.timeline({
+        defaults: { ease: "power2.out", overwrite: "auto" },
+        onComplete: () => {
+          hasPlayedEntrance.current = true;
+        },
+      });
+
+      timeline.from(panels, {
+        autoAlpha: 0,
+        y: reduceMotion ? 0 : 18,
+        duration: reduceMotion ? 0.16 : 0.76,
+        stagger: reduceMotion ? 0 : 0.1,
+        clearProps: "visibility,opacity,transform",
+      });
+    },
+    { scope: musicPageRef }
+  );
+
+  useGSAP(
+    () => {
+      const root = musicPageRef.current;
+      if (!root || !currentSong || !hasPlayedEntrance.current) return;
+
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const moodTargets = gsap.utils.toArray<HTMLElement>("[data-song-mood]", root);
+      if (!moodTargets.length) return;
+
+      gsap.fromTo(
+        moodTargets,
+        { autoAlpha: 0.68, y: reduceMotion ? 0 : 8, scale: reduceMotion ? 1 : 0.99 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          duration: reduceMotion ? 0.16 : 0.56,
+          ease: "power2.out",
+          stagger: reduceMotion ? 0 : 0.045,
+          overwrite: "auto",
+          clearProps: "visibility,opacity,transform",
+        }
+      );
+    },
+    { scope: musicPageRef, dependencies: [currentSong?.id ?? "empty"], revertOnUpdate: true }
+  );
 
   const playModeIcon = useMemo(() => {
     if (playMode === 'single') return <RefreshCcw size={18} className="text-indigo-500" />;
@@ -130,8 +192,11 @@ export default function MusicPage() {
           <Music2 size={48} className="text-indigo-500" />
           <h1 className="text-2xl font-black text-slate-900 dark:text-white">暂无可播放音乐</h1>
           <p className="max-w-md text-sm text-slate-500 dark:text-slate-400">
-            请在 `siteConfig.cloudMusicIds` 中配置网易云歌曲 ID，或稍后重试音乐接口。
+            {loadError || "当前歌单暂无可公开播放歌曲。请在本地管理端搜索并同步可公开播放的音乐。"}
           </p>
+          {skippedSongCount > 0 && (
+            <p className="text-xs font-bold text-slate-400">已跳过 {skippedSongCount} 首不可公开播放或加载失败的歌曲。</p>
+          )}
         </div>
       </div>
     );
@@ -140,7 +205,7 @@ export default function MusicPage() {
   const songCover = currentSong.cover || fallbackCover;
 
   return (
-    <div className="min-h-screen relative pb-10 flex flex-col">
+    <div ref={musicPageRef} className="min-h-screen relative pb-10 flex flex-col">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div
           className="absolute inset-[-10%] bg-cover bg-center transition-all duration-1000 blur-[50px] opacity-40 dark:opacity-20 saturate-150"
@@ -163,11 +228,12 @@ export default function MusicPage() {
           </header>
 
           <section className="flex flex-col md:grid md:grid-cols-12 gap-6 md:gap-8 w-full md:items-stretch md:h-[calc(100vh-320px)] md:min-h-[600px] md:max-h-[720px]">
-            <div className="md:col-span-5 flex flex-col bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-[28px] shadow-2xl p-6 md:p-10 relative overflow-hidden transition-all duration-500 min-h-[460px] md:min-h-0">
+            <div data-music-reveal className="md:col-span-5 flex flex-col bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-[28px] shadow-2xl p-6 md:p-10 relative overflow-hidden transition-colors duration-700 min-h-[460px] md:min-h-0">
               <div className="flex-1 flex flex-col items-center justify-center relative z-10 w-full overflow-hidden py-4 md:py-0">
-                <div className="relative w-40 h-40 sm:w-48 sm:h-48 lg:w-64 lg:h-64 flex-shrink-0 aspect-square mb-6 md:mb-10 flex items-center justify-center">
+                <div data-song-mood className="relative w-40 h-40 sm:w-48 sm:h-48 lg:w-64 lg:h-64 flex-shrink-0 aspect-square mb-6 md:mb-10 flex items-center justify-center">
                   <div className={`absolute inset-0 m-auto w-[85%] h-[85%] bg-indigo-500/25 blur-[35px] rounded-full transition-all duration-1000 z-0 ${isPlaying ? 'opacity-90 scale-105' : 'opacity-20 scale-100'}`} />
                   <motion.div
+                    data-ambient-motion="true"
                     className={`absolute inset-0 w-full h-full rounded-full border-[4px] md:border-[6px] border-white/80 dark:border-slate-600/80 shadow-2xl overflow-hidden transition-transform duration-700 z-10 rotating-disc ${isPlaying ? 'scale-100' : 'scale-95'}`}
                     style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
                   >
@@ -177,7 +243,7 @@ export default function MusicPage() {
                   </motion.div>
                 </div>
 
-                <div className="w-full text-center px-2 md:px-4 mb-2 md:mb-6">
+                <div data-song-mood className="w-full text-center px-2 md:px-4 mb-2 md:mb-6">
                   <h2 className="text-lg md:text-xl lg:text-2xl font-black text-slate-900 dark:text-white truncate drop-shadow-sm tracking-tight">
                     {currentSong.title}
                   </h2>
@@ -206,17 +272,17 @@ export default function MusicPage() {
                 </div>
 
                 <div className="w-full flex items-center justify-between px-1 md:px-2 lg:px-4">
-                  <button onClick={togglePlayMode} className="p-2 transition-transform hover:scale-110" aria-label="切换播放模式">
+                  <button onClick={togglePlayMode} className="p-2 transition-transform duration-300 hover:scale-105" aria-label="切换播放模式">
                     {playModeIcon}
                   </button>
                   <div className="flex items-center gap-3 md:gap-4 lg:gap-6">
-                    <button onClick={prevSong} className="p-2 text-slate-700 dark:text-slate-300 hover:text-indigo-500 transition-transform hover:scale-110" aria-label="上一首">
+                    <button onClick={prevSong} className="p-2 text-slate-700 dark:text-slate-300 hover:text-indigo-500 transition-transform duration-300 hover:scale-105" aria-label="上一首">
                       <SkipBack size={24} className="md:w-7 md:h-7" fill="currentColor" />
                     </button>
                     <button onClick={togglePlay} className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 flex items-center justify-center bg-indigo-500 text-white rounded-full hover:scale-105 shadow-xl shadow-indigo-500/40" aria-label={isPlaying ? '暂停' : '播放'}>
                       {isPlaying ? <Pause size={28} className="md:w-8 md:h-8" fill="currentColor" /> : <Play size={28} className="md:w-8 md:h-8 ml-1" fill="currentColor" />}
                     </button>
-                    <button onClick={nextSong} className="p-2 text-slate-700 dark:text-slate-300 hover:text-indigo-500 transition-transform hover:scale-110" aria-label="下一首">
+                    <button onClick={nextSong} className="p-2 text-slate-700 dark:text-slate-300 hover:text-indigo-500 transition-transform duration-300 hover:scale-105" aria-label="下一首">
                       <SkipForward size={24} className="md:w-7 md:h-7" fill="currentColor" />
                     </button>
                   </div>
@@ -250,7 +316,7 @@ export default function MusicPage() {
               </div>
             </div>
 
-            <div className="md:col-span-7 flex flex-col bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-[28px] shadow-2xl relative transition-colors duration-700 overflow-hidden h-[450px] md:h-auto">
+            <div data-music-reveal className="md:col-span-7 flex flex-col bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-[28px] shadow-2xl relative transition-colors duration-700 overflow-hidden h-[450px] md:h-auto">
               <div className="flex items-center justify-center gap-1 p-1 mt-4 md:mt-6 mx-auto bg-white/50 dark:bg-slate-900/50 rounded-full shadow-inner border border-white/40 w-48 md:w-64 z-20 shrink-0">
                 <button onClick={() => setActiveTab('lyrics')} className={`flex-1 py-1.5 md:py-2 rounded-full font-black text-xs md:text-[13px] transition-all ${activeTab === 'lyrics' ? 'bg-indigo-500 text-white shadow-md' : 'text-slate-500'}`}>
                   歌词
@@ -361,7 +427,7 @@ export default function MusicPage() {
             </div>
           </section>
 
-          <section className="mt-8 md:mt-12 mb-20 bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-[28px] md:rounded-[32px] shadow-2xl border border-white/40 dark:border-white/10 overflow-hidden transition-colors duration-700 relative">
+          <section data-music-reveal className="mt-8 md:mt-12 mb-20 bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-[28px] md:rounded-[32px] shadow-2xl border border-white/40 dark:border-white/10 overflow-hidden transition-colors duration-700 relative">
             <div className="px-5 sm:px-8 md:px-16 py-8 md:py-12 relative">
               <div className="flex items-center gap-3 mb-6 md:mb-8 border-b border-slate-300/50 dark:border-slate-700 pb-4 md:pb-6">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-indigo-500/10 flex items-center justify-center">

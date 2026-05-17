@@ -8,19 +8,51 @@ import {
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { siteConfig } from '../siteConfig';
+} from "react";
+import { siteConfig } from "../siteConfig";
 
 export type LyricLine = {
   time: number;
   text: string;
 };
 
-export type MusicSong = {
-  id: string | number;
+export type PlaybackType = "full" | "preview" | "restricted" | "unavailable" | "unknown";
+
+export type MusicAvailability = {
+  status: PlaybackType;
+  playable: boolean;
+  reasonCode?: string;
+  reason?: string;
+  checkedAt?: string;
+  evidence?: {
+    declaredDurationMs?: number;
+    contentLengthBytes?: number;
+    contentRange?: string;
+    estimatedBitrateKbps?: number;
+    durationRatio?: number;
+    previewLike?: boolean;
+    officialPlayable?: boolean;
+    [key: string]: unknown;
+  };
+};
+
+export type MusicLibraryItem = {
+  id: string;
+  provider: "netease";
   title: string;
   artist: string;
-  cover: string;
+  album?: string;
+  cover?: string;
+  durationMs?: number;
+  externalUrl: string;
+  playbackType: PlaybackType;
+  publicPlayable: boolean;
+  lastCheckedAt: string;
+  reason?: string;
+  availability?: MusicAvailability;
+};
+
+export type MusicSong = MusicLibraryItem & {
   src: string;
   lrcUrl?: string;
   lyrics: LyricLine[];
@@ -31,7 +63,7 @@ export type MusicSong = {
   lyric?: string;
 };
 
-type PlayMode = 'loop' | 'single' | 'random';
+type PlayMode = "loop" | "single" | "random";
 
 interface MusicContextType {
   playlist: MusicSong[];
@@ -43,6 +75,8 @@ interface MusicContextType {
   duration: number;
   currentLyric: string;
   isLoading: boolean;
+  loadError: string;
+  skippedSongCount: number;
   volume: number;
   isMuted: boolean;
   playMode: PlayMode;
@@ -58,9 +92,13 @@ interface MusicContextType {
   togglePlayMode: () => void;
 }
 
-const MusicContext = createContext<MusicContextType | null>(null);
+type SiteConfigWithMusic = Omit<typeof siteConfig, "musicLibrary" | "cloudMusicIds"> & {
+  musicLibrary?: MusicLibraryItem[];
+  cloudMusicIds?: Array<string | number>;
+};
 
-const fallbackCover = 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop';
+const MusicContext = createContext<MusicContextType | null>(null);
+const fallbackCover = "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop";
 
 function parseLrc(lrcText: string): LyricLine[] {
   if (!lrcText || lrcText.length > 30000) return [];
@@ -70,7 +108,7 @@ function parseLrc(lrcText: string): LyricLine[] {
   const timeExp = /\[(\d{2,}):(\d{2})(?:[.:](\d{2,3}))?\]/g;
 
   for (const line of lines) {
-    const text = line.replace(/\[\d{2,}:\d{2}(?:[.:]\d{2,3})?\]/g, '').trim();
+    const text = line.replace(/\[\d{2,}:\d{2}(?:[.:]\d{2,3})?\]/g, "").trim();
     if (!text) continue;
 
     let match: RegExpExecArray | null;
@@ -78,7 +116,7 @@ function parseLrc(lrcText: string): LyricLine[] {
     while ((match = timeExp.exec(line)) !== null) {
       const minutes = parseInt(match[1], 10);
       const seconds = parseInt(match[2], 10);
-      const fraction = match[3] ? parseInt(match[3].padEnd(3, '0'), 10) / 1000 : 0;
+      const fraction = match[3] ? parseInt(match[3].padEnd(3, "0"), 10) / 1000 : 0;
       result.push({ time: minutes * 60 + seconds + fraction, text });
     }
   }
@@ -86,8 +124,100 @@ function parseLrc(lrcText: string): LyricLine[] {
   return result.sort((a, b) => a.time - b.time);
 }
 
-function toStringValue(value: unknown, fallback = '') {
-  return typeof value === 'string' && value.trim() ? value : fallback;
+function toStringValue(value: unknown, fallback = "") {
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function isSafePublicUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    if (url.protocol !== "https:") return false;
+    if (host === "localhost" || host.endsWith(".local")) return false;
+    if (/^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(host)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isLikelyPreviewEvidence(track: MusicLibraryItem) {
+  const evidence = track.availability?.evidence;
+  if (!evidence) return false;
+  if (evidence.previewLike) return true;
+  if (evidence.officialPlayable === false) return true;
+  if (typeof evidence.estimatedBitrateKbps === "number" && evidence.estimatedBitrateKbps < 32) return true;
+  if (typeof evidence.durationRatio === "number" && evidence.durationRatio < 0.65) return true;
+  return false;
+}
+
+function isTrustedFullTrack(track: MusicLibraryItem) {
+  return track.publicPlayable && track.playbackType === "full" && !isLikelyPreviewEvidence(track);
+}
+
+function isRuntimePreviewStream(track: MusicLibraryItem, actualDurationSeconds: number) {
+  const declaredDurationMs = track.durationMs || track.availability?.evidence?.declaredDurationMs || 0;
+  if (!Number.isFinite(actualDurationSeconds) || actualDurationSeconds <= 0 || declaredDurationMs < 60000) {
+    return false;
+  }
+  const actualDurationMs = actualDurationSeconds * 1000;
+  const ratio = actualDurationMs / declaredDurationMs;
+  return actualDurationMs <= 45000 && ratio < 0.65;
+}
+
+function configuredTracks() {
+  const config = siteConfig as SiteConfigWithMusic;
+  const library = Array.isArray(config.musicLibrary) ? config.musicLibrary : [];
+  if (library.length > 0) {
+    const tracks = library.filter(isTrustedFullTrack);
+    return {
+      tracks,
+      skippedBeforeLoad: library.length - tracks.length,
+      usingStructuredLibrary: true,
+    };
+  }
+
+  return {
+    tracks: [],
+    skippedBeforeLoad: (config.cloudMusicIds || []).length,
+    usingStructuredLibrary: false,
+  };
+}
+
+async function resolvePlayableSong(track: MusicLibraryItem): Promise<MusicSong | null> {
+  try {
+    if (!isTrustedFullTrack(track)) return null;
+    const response = await fetch(`https://api.injahow.cn/meting/?server=netease&type=song&id=${track.id}`);
+    if (!response.ok) return null;
+    const result = await response.json();
+    if (!Array.isArray(result) || !result[0]) return null;
+
+    const song = result[0] as Record<string, unknown>;
+    const src = toStringValue(song.url);
+    if (!src || !isSafePublicUrl(src)) return null;
+
+    const title = toStringValue(song.name, toStringValue(song.title, track.title || `歌曲 #${track.id}`));
+    const artist = toStringValue(song.author, toStringValue(song.artist, track.artist || "未知歌手"));
+    const cover = toStringValue(song.pic, toStringValue(song.cover, track.cover || fallbackCover));
+    const rawLrcUrl = toStringValue(song.lrc);
+    const lrcUrl = rawLrcUrl && isSafePublicUrl(rawLrcUrl) ? rawLrcUrl : undefined;
+
+    return {
+      ...track,
+      title,
+      artist,
+      cover,
+      src,
+      lrcUrl,
+      lyrics: [],
+      name: title,
+      author: artist,
+      pic: cover,
+      lrc: lrcUrl,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export function MusicProvider({ children }: { children: ReactNode }) {
@@ -98,11 +228,13 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [lyrics, setLyrics] = useState<LyricLine[]>([]);
-  const [currentLyric, setCurrentLyric] = useState('正在加载音乐...');
+  const [currentLyric, setCurrentLyric] = useState("正在加载音乐...");
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [skippedSongCount, setSkippedSongCount] = useState(0);
   const [volume, setVolumeState] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
-  const [playMode, setPlayMode] = useState<PlayMode>('loop');
+  const [playMode, setPlayMode] = useState<PlayMode>("loop");
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const currentSong = playlist[currentIndex] ?? null;
@@ -113,67 +245,32 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
 
     async function fetchMusicData() {
-      if (!siteConfig.cloudMusicIds?.length) {
+      const { tracks, skippedBeforeLoad, usingStructuredLibrary } = configuredTracks();
+      setSkippedSongCount(skippedBeforeLoad);
+
+      if (tracks.length === 0) {
         setPlaylist([]);
-        setCurrentLyric('请先配置音乐 ID');
+        setCurrentLyric(usingStructuredLibrary ? "音乐库中暂无完整可公开播放的歌曲。" : "请先在管理端同步结构化音乐库。");
+        setLoadError(usingStructuredLibrary ? "当前音乐库没有完整可公开播放的歌曲。" : "旧版音乐 ID 不再直接播放，请通过管理端检测并同步音乐库。");
         setIsLoading(false);
         return;
       }
 
       try {
-        const results = await Promise.all(
-          siteConfig.cloudMusicIds.map(async (id) => {
-            try {
-              const response = await fetch(`https://api.injahow.cn/meting/?server=netease&type=song&id=${id}`);
-              if (!response.ok) return null;
-              return response.json();
-            } catch {
-              return null;
-            }
-          })
-        );
-
-        const nextPlaylist = results
-          .map((result, index): MusicSong | null => {
-            if (!Array.isArray(result) || !result[0]) return null;
-
-            const song = result[0] as Record<string, unknown>;
-            const src = toStringValue(song.url);
-            if (!src) return null;
-
-            const title = toStringValue(song.name, toStringValue(song.title, '未命名歌曲'));
-            const artist = toStringValue(song.author, toStringValue(song.artist, '未知歌手'));
-            const cover = toStringValue(song.pic, toStringValue(song.cover, fallbackCover));
-            const lrcUrl = toStringValue(song.lrc) || undefined;
-
-            return {
-              id:
-                typeof song.id === 'string' || typeof song.id === 'number'
-                  ? song.id
-                  : siteConfig.cloudMusicIds[index],
-              title,
-              artist,
-              cover,
-              src,
-              lrcUrl,
-              lyrics: [],
-              name: title,
-              author: artist,
-              pic: cover,
-              lrc: lrcUrl,
-            };
-          })
-          .filter((song): song is MusicSong => Boolean(song));
-
+        const results = await Promise.all(tracks.map(resolvePlayableSong));
+        const nextPlaylist = results.filter((song): song is MusicSong => Boolean(song));
         if (!isMounted) return;
 
         setPlaylist(nextPlaylist);
         setCurrentIndex(0);
-        setCurrentLyric(nextPlaylist.length ? '准备就绪' : '没有可播放的音乐，请检查歌曲 ID 或网络连接');
+        setSkippedSongCount(skippedBeforeLoad + (tracks.length - nextPlaylist.length));
+        setLoadError(nextPlaylist.length ? "" : "已配置的公开音乐暂时无法加载。");
+        setCurrentLyric(nextPlaylist.length ? "准备就绪" : "暂无完整可公开播放的音乐。");
       } catch {
         if (!isMounted) return;
         setPlaylist([]);
-        setCurrentLyric('音乐列表加载失败，请稍后重试');
+        setLoadError("音乐列表加载失败。");
+        setCurrentLyric("音乐列表加载失败。");
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -202,11 +299,11 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     setProgress(0);
     setCurrentTime(0);
     setDuration(0);
-    setCurrentLyric('正在缓冲...');
+    setCurrentLyric("正在缓冲...");
 
     async function loadLyrics() {
       if (!lrcUrl) {
-        if (isMounted) setCurrentLyric('纯音乐，请欣赏');
+        if (isMounted) setCurrentLyric("纯音乐，请欣赏");
         return;
       }
 
@@ -218,14 +315,14 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         if (!isMounted) return;
 
         setLyrics(parsed);
-        setCurrentLyric(parsed.length ? '准备就绪' : '纯音乐，请欣赏');
+        setCurrentLyric(parsed.length ? "准备就绪" : "纯音乐，请欣赏");
         setPlaylist((previous) =>
-          previous.map((song) => (song.id === songId ? { ...song, lyrics: parsed } : song))
+          previous.map((song) => (song.id === songId ? { ...song, lyrics: parsed } : song)),
         );
       } catch {
         if (!isMounted) return;
         setLyrics([]);
-        setCurrentLyric('歌词加载失败');
+        setCurrentLyric("歌词加载失败");
       }
     }
 
@@ -274,11 +371,34 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const skipCurrentSong = (message: string, emptyMessage = "暂无完整可公开播放的音乐。") => {
+    const failedId = currentSong?.id;
+    if (!failedId) return;
+
+    audioRef.current?.pause();
+    setSkippedSongCount((previous) => previous + 1);
+    setPlaylist((previous) => {
+      const failedIndex = previous.findIndex((song) => song.id === failedId);
+      const nextPlaylist = previous.filter((song) => song.id !== failedId);
+      if (nextPlaylist.length === 0) {
+        setCurrentIndex(0);
+        setIsPlaying(false);
+        setLoadError(emptyMessage);
+        setCurrentLyric(emptyMessage);
+        return [];
+      }
+
+      setCurrentIndex(Math.min(Math.max(failedIndex, 0), nextPlaylist.length - 1));
+      setCurrentLyric(message);
+      return nextPlaylist;
+    });
+  };
+
   const nextSong = () => {
     if (playlist.length === 0) return;
 
     setCurrentIndex((previous) => {
-      if (playMode === 'random') {
+      if (playMode === "random") {
         if (playlist.length === 1) return previous;
 
         let nextIndex = previous;
@@ -296,7 +416,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if (playlist.length === 0) return;
 
     setCurrentIndex((previous) => {
-      if (playMode === 'random') {
+      if (playMode === "random") {
         if (playlist.length === 1) return previous;
         return Math.floor(Math.random() * playlist.length);
       }
@@ -351,11 +471,15 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const handleLoadedMetadata = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+    const nextDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
+    setDuration(nextDuration);
+    if (currentSong && isRuntimePreviewStream(currentSong, nextDuration)) {
+      skipCurrentSong("已跳过一首疑似试听音源。");
+    }
   };
 
   const handleEnded = () => {
-    if (playMode === 'single' && audioRef.current) {
+    if (playMode === "single" && audioRef.current) {
       audioRef.current.currentTime = 0;
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
@@ -365,6 +489,10 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     }
 
     nextSong();
+  };
+
+  const handleAudioError = () => {
+    skipCurrentSong("已跳过一首不可用歌曲。", "所有已配置音乐在播放时都失败了。");
   };
 
   const setVolume = (value: number) => {
@@ -377,9 +505,9 @@ export function MusicProvider({ children }: { children: ReactNode }) {
 
   const togglePlayMode = () => {
     setPlayMode((previous) => {
-      if (previous === 'loop') return 'single';
-      if (previous === 'single') return 'random';
-      return 'loop';
+      if (previous === "loop") return "single";
+      if (previous === "single") return "random";
+      return "loop";
     });
   };
 
@@ -395,6 +523,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         duration,
         currentLyric,
         isLoading,
+        loadError,
+        skippedSongCount,
         volume,
         isMuted,
         playMode,
@@ -419,6 +549,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleEnded}
           onLoadedMetadata={handleLoadedMetadata}
+          onError={handleAudioError}
         />
       )}
     </MusicContext.Provider>
@@ -427,6 +558,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
 
 export const useMusic = () => {
   const context = useContext(MusicContext);
-  if (!context) throw new Error('useMusic must be used within MusicProvider');
+  if (!context) throw new Error("useMusic must be used within MusicProvider");
   return context;
 };

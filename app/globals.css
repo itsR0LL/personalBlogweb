@@ -11,7 +11,7 @@
 
   body {
     font-family: var(--font-serif);
-    @apply transition-colors duration-1000 text-slate-900 bg-slate-50;
+    @apply transition-colors duration-[900ms] text-slate-900 bg-slate-50;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -32,7 +32,6 @@
   }
 
   [class*="backdrop-blur-"] {
-    will-change: backdrop-filter;
     -webkit-backdrop-filter: blur(12px);
   }
 
@@ -53,10 +52,6 @@ input[type=range]::-webkit-slider-thumb {
 
 /* 4. 火狐专项优化与布局兜底 */
 @layer base {
-  [class*="backdrop-blur-"] {
-    will-change: backdrop-filter;
-  }
-
   @-moz-document url-prefix() {
     [class*="backdrop-blur-md"] {
       backdrop-filter: blur(8px) !important;
@@ -110,4 +105,23 @@ input[type=range]::-webkit-slider-thumb {
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  [data-ambient-motion="true"] {
+    animation: none !important;
+    transform: none !important;
+  }
 }

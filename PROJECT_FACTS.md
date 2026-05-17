@@ -26,7 +26,7 @@ Update it before changing content ownership or deployment boundaries.
 | Friends | `/friends` | `data/friends.ts` |
 | Projects | `/projects` | `data/projects.ts` |
 | About | `/about` | `app/about/about.md`, `siteConfig.ts` |
-| Music | `/music` and global player | `siteConfig.cloudMusicIds` |
+| Music | `/music` and global player | `siteConfig.musicLibrary`, fallback `siteConfig.cloudMusicIds` |
 | Global shell | all routes | `siteConfig.ts`, `components/Navbar.tsx`, `app/layout.tsx` |
 | AI chat | `/api/chat` | `siteConfig.geminiConfig`, `GEMINI_API_KEY` |
 
@@ -42,15 +42,15 @@ site changed correctly after save, not only that the manager UI saved data.
    - `app/about/about.md`
 2. v2 site settings:
    - `siteConfig.ts`
-   - profile, nav, theme, background, music IDs, footer, chat settings
-   - Music IDs are managed from the local manager music page and queued as a `CONFIG` operation for `cloudMusicIds`.
+   - profile, nav, theme, background, music library, footer, chat settings
+   - Music is managed from the local manager music page, queued as a `CONFIG` operation, and writes both `musicLibrary` and derived `cloudMusicIds`.
 3. v3 structured data:
    - `data/albums.ts`
    - `data/friends.ts`
    - `data/projects.ts`
 4. v4 deferred capabilities:
    - image upload or picture bed integration
-   - music metadata lookup
+   - music metadata lookup and public-playback availability checks
    - AI configuration editor
    - deployment controls
 

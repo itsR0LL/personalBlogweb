@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { siteConfig } from '../siteConfig';
+import { motionTransition, motionVariants } from '../lib/motion';
 
 export default function Navbar() {
   const [showNav, setShowNav] = useState(true);
@@ -98,10 +99,11 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <motion.div
             className="md:hidden fixed inset-0 z-[55]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
+            variants={motionVariants.modalBackdrop}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={motionTransition.fast}
           >
             <button
               type="button"
@@ -111,10 +113,11 @@ export default function Navbar() {
             />
 
             <motion.nav
-              initial={{ opacity: 0, y: -10, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.98 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
+              variants={motionVariants.popover}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={motionTransition.base}
               className="absolute left-3 right-3 top-20 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-2xl p-3 max-h-[calc(100dvh-6rem)] overflow-y-auto"
             >
               <div className="grid grid-cols-2 gap-2">

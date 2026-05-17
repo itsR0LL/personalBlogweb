@@ -67,7 +67,7 @@ export default function FriendsBoard() {
               target="_blank"
               rel="noopener noreferrer"
               // 🌟 核心修改 2：卡片 padding 缩小，圆角缩小
-              className="block h-full rounded-2xl md:rounded-3xl bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-lg md:shadow-xl overflow-hidden transition-all duration-500 hover:-translate-y-1 md:hover:-translate-y-2 hover:scale-[1.02] group relative p-3 md:p-6"
+              className="block h-full rounded-2xl md:rounded-3xl bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-lg md:shadow-xl overflow-hidden transition-[transform,color,background-color,border-color] duration-500 hover:-translate-y-1 hover:scale-[1.01] group relative p-3 md:p-6"
             >
               {/* 卡片底部的动态光晕 */}
               <div
@@ -148,7 +148,7 @@ export default function FriendsBoard() {
         <div className="mt-6 md:mt-8">
           <a
             href="#comments-container"
-            className="inline-block px-6 py-2.5 md:px-8 md:py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-full text-sm md:text-base font-bold tracking-widest transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/30"
+            className="inline-block px-6 py-2.5 md:px-8 md:py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-full text-sm md:text-base font-bold tracking-widest transition-[transform,color,background-color] duration-300 hover:scale-[1.03] active:scale-95 shadow-lg shadow-indigo-500/30"
           >
             View comment status
           </a>

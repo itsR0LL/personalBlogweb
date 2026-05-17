@@ -19,6 +19,7 @@ import 'highlight.js/styles/atom-one-dark.css';
 
 import Navbar from '../../../components/Navbar';
 import PageTransition from '../../../components/PageTransition';
+import BlogReveal from '../../../components/motion/BlogReveal';
 import { siteConfig } from '../../../siteConfig';
 import ClientSocials from '../../../components/ClientSocials';
 import ClientTOC from '../../../components/ClientTOC';
@@ -103,11 +104,11 @@ export default async function Post({ params }: { params: Promise<{ slug: string 
     <div className="min-h-screen relative pb-20">
       <Navbar />
       <PageTransition>
-        <main className="w-[95%] md:w-[90%] max-w-6xl mx-auto mt-24 md:mt-28 flex flex-col lg:flex-row gap-6 md:gap-8 relative z-10">
+        <BlogReveal as="main" preset="article" className="w-[95%] md:w-[90%] max-w-6xl mx-auto mt-24 md:mt-28 flex flex-col lg:flex-row gap-6 md:gap-8 relative z-10">
 
-          <article className="flex-1 bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 dark:border-white/10 overflow-hidden transition-colors duration-700">
+          <article data-blog-reveal className="flex-1 bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 dark:border-white/10 overflow-hidden transition-colors duration-700">
             <div className="w-full aspect-video bg-slate-200 dark:bg-slate-700 relative group">
-              <img src={postData.cover} alt="封面" className="w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-105" />
+              <img src={postData.cover} alt="封面" className="w-full h-full object-cover opacity-90 transition-transform duration-[1200ms] group-hover:scale-[1.035]" />
             </div>
 
             {/* 🌟 减少手机端的内边距 p-5 md:p-12 */}
@@ -186,7 +187,7 @@ export default async function Post({ params }: { params: Promise<{ slug: string 
           </article>
 
           {/* 侧边栏 */}
-          <aside className="w-full lg:w-[320px] flex flex-col gap-6 flex-shrink-0">
+          <aside data-blog-reveal className="w-full lg:w-[320px] flex flex-col gap-6 flex-shrink-0">
             <div className="bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-3xl p-6 border border-white/40 dark:border-white/10 shadow-xl text-center">
               <div className="w-20 h-20 mx-auto rounded-full p-1 bg-gradient-to-tr from-indigo-500 to-purple-500 shadow-md mb-4 transition-transform duration-500 hover:rotate-3">
                 <img src={siteConfig.avatarUrl} alt="avatar" className="w-full h-full rounded-full object-cover bg-white" />
@@ -214,7 +215,7 @@ export default async function Post({ params }: { params: Promise<{ slug: string 
               <ClientTOC toc={postData.toc} />
             )}
           </aside>
-        </main>
+        </BlogReveal>
       </PageTransition>
     </div>
   );

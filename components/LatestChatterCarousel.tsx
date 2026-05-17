@@ -3,32 +3,40 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 export default function LatestChatterCarousel({ chatters }: { chatters: any[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    if (chatters.length <= 1) return;
+    if (chatters.length <= 1 || reduceMotion || isPaused) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % chatters.length);
-    }, 6000);
+    }, 7600);
     return () => clearInterval(timer);
-  }, [chatters.length]);
+  }, [chatters.length, reduceMotion, isPaused]);
 
   if (!chatters || chatters.length === 0) return null;
 
   const currentChatter = chatters[currentIndex];
 
   const holoVariants = {
-    initial: { opacity: 0, scale: 0.95, filter: "blur(10px)" },
+    initial: { opacity: 0, scale: 0.98, filter: "blur(8px)" },
     animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
-    exit: { opacity: 0, scale: 1.05, filter: "blur(10px)" },
+    exit: { opacity: 0, scale: 1.02, filter: "blur(8px)" },
   };
 
   return (
     // 🌟 注意这里：去掉了 md:col-span-8，变成一个纯粹填满父容器的组件
-    <div className="w-full h-full rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl overflow-hidden relative group min-h-[180px] sm:min-h-[220px] flex flex-col max-w-full">
+    <div
+      onPointerEnter={() => setIsPaused(true)}
+      onPointerLeave={() => setIsPaused(false)}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={() => setIsPaused(false)}
+      className="w-full h-full rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl overflow-hidden relative group min-h-[180px] sm:min-h-[220px] flex flex-col max-w-full"
+    >
       <Link href={currentChatter.slug === 'none' ? '/chatter' : `/chatter/${currentChatter.slug}`} className="absolute inset-0 z-20" aria-label={`查看杂谈: ${currentChatter.title}`} />
 
       <AnimatePresence mode="wait">
@@ -38,10 +46,10 @@ export default function LatestChatterCarousel({ chatters }: { chatters: any[] })
           initial="initial"
           animate="animate"
           exit="exit"
-          transition={{ duration: 0.8, ease: "easeInOut" }}
+          transition={{ duration: reduceMotion ? 0.16 : 0.96, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0 z-0"
         >
-          <img src={currentChatter.cover} className="w-full h-full object-cover opacity-80 dark:opacity-60 transition-transform duration-1000 group-hover:scale-105" alt={currentChatter.title || '杂谈封面'} />
+          <img src={currentChatter.cover} className="w-full h-full object-cover opacity-80 dark:opacity-60 transition-transform duration-[1400ms] group-hover:scale-[1.035]" alt={currentChatter.title || '杂谈封面'} />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/10"></div>
         </motion.div>
       </AnimatePresence>

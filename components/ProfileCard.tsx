@@ -16,7 +16,7 @@ export default function ProfileCard({ postCount, chatterCount, photoCount }: { p
   return (
     <div
       onClick={() => router.push('/about')}
-      className="md:col-span-7 rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-4 sm:p-6 md:p-8 flex flex-col justify-between transition-all duration-700 hover:scale-[1.01] cursor-pointer group relative overflow-hidden h-full min-h-[200px] sm:min-h-[220px] md:min-h-[280px] max-w-full"
+      className="md:col-span-7 rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-4 sm:p-6 md:p-8 flex flex-col justify-between transition-[transform,color,background-color,border-color] duration-700 hover:scale-[1.01] cursor-pointer group relative overflow-hidden h-full min-h-[200px] sm:min-h-[220px] md:min-h-[280px] max-w-full"
     >
       <div className="flex items-start justify-between relative z-10 w-full">
         <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full min-w-0">

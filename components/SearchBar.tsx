@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
+import { motionTransition, motionVariants } from '../lib/motion';
 
 interface Post {
   slug: string;
@@ -108,10 +109,11 @@ export default function SearchBar({ posts = [] }: { posts: Post[] }) {
       <AnimatePresence>
         {isOpen && searchQuery.trim() !== '' && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.98 }}
-            transition={{ duration: 0.2 }}
+            variants={motionVariants.popover}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={motionTransition.base}
             className="absolute top-full left-0 right-0 mt-3 sm:mt-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-3xl border border-white/50 dark:border-slate-700/50 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[min(450px,calc(100dvh-8rem))] overflow-y-auto z-20"
           >
             {searchResults.length > 0 ? (

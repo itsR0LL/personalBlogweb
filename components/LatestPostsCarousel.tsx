@@ -3,26 +3,34 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 export default function LatestPostsCarousel({ posts }: { posts: any[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   // 设置自动播放定时器
   useEffect(() => {
-    if (posts.length <= 1) return;
+    if (posts.length <= 1 || reduceMotion || isPaused) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % posts.length);
-    }, 5000); // 5秒切换一次
+    }, 7200); // 7.2秒切换一次
     return () => clearInterval(timer);
-  }, [posts.length]);
+  }, [posts.length, reduceMotion, isPaused]);
 
   if (!posts || posts.length === 0) return null;
 
   const currentPost = posts[currentIndex];
 
   return (
-    <div className="md:col-span-4 rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl overflow-hidden relative group min-h-[320px] sm:min-h-[420px] h-full flex flex-col max-w-full">
+    <div
+      onPointerEnter={() => setIsPaused(true)}
+      onPointerLeave={() => setIsPaused(false)}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={() => setIsPaused(false)}
+      className="md:col-span-4 rounded-2xl sm:rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl overflow-hidden relative group min-h-[320px] sm:min-h-[420px] h-full flex flex-col max-w-full"
+    >
 
       {/* 整个卡片的点击跳转区域 */}
       <Link href={currentPost.slug === 'none' ? '#' : `/posts/${currentPost.slug}`} className="absolute inset-0 z-20" aria-label={`阅读 ${currentPost.title}`} />
@@ -34,10 +42,10 @@ export default function LatestPostsCarousel({ posts }: { posts: any[] }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: reduceMotion ? 0.16 : 0.92, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0 z-0"
         >
-          <img src={currentPost.cover} className="w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-105" alt={currentPost.title} />
+          <img src={currentPost.cover} className="w-full h-full object-cover opacity-90 transition-transform duration-[1400ms] group-hover:scale-[1.035]" alt={currentPost.title} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
         </motion.div>
       </AnimatePresence>
@@ -52,7 +60,7 @@ export default function LatestPostsCarousel({ posts }: { posts: any[] }) {
             </span>
           )}
         </div>
-        <h2 className="text-lg sm:text-2xl font-bold text-white mb-2 group-hover:-translate-y-1 transition-transform drop-shadow-md line-clamp-3">{currentPost.title}</h2>
+        <h2 className="text-lg sm:text-2xl font-bold text-white mb-2 group-hover:-translate-y-0.5 transition-transform duration-500 drop-shadow-md line-clamp-3">{currentPost.title}</h2>
         <p className="text-sm text-gray-300 line-clamp-3 drop-shadow-sm mb-6">{currentPost.description}</p>
       </div>
 

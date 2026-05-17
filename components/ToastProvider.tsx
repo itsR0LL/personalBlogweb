@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { motionSpring, motionVariants } from '../lib/motion';
 
 // 定义全局可以调用的方法
 interface ToastContextType {
@@ -24,9 +25,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <AnimatePresence>
         {toastMsg && (
           <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -50, scale: 0.9 }}
+            variants={motionVariants.slideUp}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={motionSpring.snappy}
+            role="status"
+            aria-live="polite"
             className={`fixed top-20 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-xl border
               ${toastMsg.type === 'success' ? 'bg-green-500/90 border-green-400 text-white' : ''}
               ${toastMsg.type === 'warning' ? 'bg-amber-500/90 border-amber-400 text-white' : ''}
