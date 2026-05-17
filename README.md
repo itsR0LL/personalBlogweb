@@ -115,3 +115,17 @@ The upstream project is licensed under CC BY-NC 4.0. Keep attribution and do not
 ## Deploy on Vercel
 
 Import this project into Vercel as a Next.js project. If you use the optional AI assistant, configure the required AI provider environment variable before enabling it publicly.
+
+## Self-hosted Docker Deploy
+
+The self-hosted IPv6 server uses Docker and a high-port Nginx entrypoint. The
+server-side deploy script is versioned at `deploy/server-deploy.sh` and installed
+on the server as:
+
+```text
+/usr/local/bin/personalblogweb-deploy
+```
+
+The local manager can call that script over SSH after syncing local content and
+pushing this public repository. The manager app itself remains local-only and is
+not deployed to the server.
