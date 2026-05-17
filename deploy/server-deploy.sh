@@ -19,6 +19,7 @@ usage() {
   cat <<'EOF'
 Usage:
   personalblogweb-deploy deploy
+  personalblogweb-deploy deploy-upload /tmp/source.tar.gz [commit]
   personalblogweb-deploy status
   personalblogweb-deploy content-status
   personalblogweb-deploy content-activate /tmp/content-bundle-dir
@@ -205,10 +206,69 @@ deploy() {
   log "deploy complete: $release_dir"
 }
 
+deploy_upload() {
+  ensure_layout
+
+  local archive_path="${1:-}"
+  local app_commit="${2:-unknown}"
+  if [[ -z "$archive_path" || ! -f "$archive_path" ]]; then
+    log "missing source archive: $archive_path"
+    return 2
+  fi
+
+  local previous_release=""
+  previous_release="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
+
+  local safe_commit
+  safe_commit="${app_commit//[^A-Za-z0-9._-]/-}"
+  local release_id
+  release_id="$(date +%Y%m%d-%H%M%S)-${safe_commit:0:7}-upload"
+  local release_dir="$RELEASES_DIR/$release_id"
+
+  log "extracting uploaded source archive -> $release_dir"
+  mkdir -p "$release_dir"
+  tar -xzf "$archive_path" -C "$release_dir"
+
+  if [[ ! -f "$release_dir/deploy/docker-compose.server.yml" ]]; then
+    log "missing deploy/docker-compose.server.yml in uploaded release"
+    rm -rf "$release_dir"
+    return 1
+  fi
+
+  log "building and restarting Docker container"
+  local app_build_time
+  app_build_time="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  APP_COMMIT="$app_commit" APP_BUILD_TIME="$app_build_time" NODE_IMAGE="$NODE_IMAGE" docker compose -f "$release_dir/deploy/docker-compose.server.yml" up -d --build --remove-orphans
+
+  log "checking health"
+  local ok="false"
+  for _ in $(seq 1 20); do
+    if curl -fsS --max-time 5 "$HEALTH_URL" >/dev/null; then
+      ok="true"
+      break
+    fi
+    sleep 2
+  done
+
+  if [[ "$ok" != "true" ]]; then
+    log "health check failed"
+    restore_previous "$previous_release"
+    return 1
+  fi
+
+  ln -sfn "$release_dir" "$CURRENT_LINK"
+  rm -f "$archive_path"
+  prune_old_releases
+  log "deploy complete: $release_dir"
+}
+
 main() {
   case "${1:-}" in
     deploy)
       deploy
+      ;;
+    deploy-upload)
+      deploy_upload "${2:-}" "${3:-unknown}"
       ;;
     status)
       status
