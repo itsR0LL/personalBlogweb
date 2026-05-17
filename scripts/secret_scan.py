@@ -4,12 +4,24 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SKIP_DIRS = {".git", ".next", "node_modules", "manager_data", ".vercel"}
+SKIP_DIRS = {".git", ".next", "node_modules", "manager_data"}
 SKIP_FILES = {"package-lock.json", "backend_config.json"}
 
 PATTERNS = [
     ("picBedToken literal", re.compile(r"(?<!['\"])\bpicBedToken\s*:\s*['\"][^'\"\s][^'\"]+['\"]")),
     ("Gitalk client secret literal", re.compile(r"(?<!['\"])\bclientSecret\s*:\s*['\"][^'\"\s][^'\"]{8,}['\"]")),
+    (
+        "AI key assignment",
+        re.compile(
+            r"\b(?:AI_API_KEY|OPENAI_API_KEY|SILICONFLOW_API_KEY|GEMINI_API_KEY|QWEATHER_KEY)\s*=\s*"
+            r"(?!\.\.\.|your-|YOUR_|example|placeholder|<)[A-Za-z0-9_.\-]{20,}"
+        ),
+    ),
+    ("OpenAI-style secret literal", re.compile(r"\bsk-[A-Za-z0-9_\-]{20,}\b")),
+    (
+        "Bearer token literal",
+        re.compile(r"Authorization\s*:\s*['\"]Bearer\s+(?!\$\{|<|your-|YOUR_)[A-Za-z0-9_.\-]{20,}['\"]"),
+    ),
 ]
 
 

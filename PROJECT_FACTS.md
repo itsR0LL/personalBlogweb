@@ -8,8 +8,8 @@ Update it before changing content ownership or deployment boundaries.
 - Public site target: the repository root Next.js app.
 - Manager target: the sibling private local app at `E:\Project\my-blog-manager`.
 - Stable baseline: `7a0f035 chore: baseline before anime blog polish`.
-- Public-site Vercel deployment excludes local logs, `.env*`, `.next/`, and `node_modules/` through root `.vercelignore`. A defensive `my-blog-manager/` exclude may remain, but the manager directory is no longer part of this checkout.
-- The former `personalblog-manager` Vercel project has been removed. The manager is not currently deployed online.
+- Public-site production is the self-hosted Docker deployment on the IPv6 server. GitHub remains the source handoff used by the server deploy script.
+- The former online manager project has been removed. The manager is not currently deployed online.
 - The root public site does not own `/manager`; the manager UI is the sibling app root and should be opened through the local launcher.
 - `/api/manager/*` is intentionally not part of the recovered public site.
 
@@ -28,7 +28,7 @@ Update it before changing content ownership or deployment boundaries.
 | About | `/about` | `app/about/about.md`, `siteConfig.ts` |
 | Music | `/music` and global player | `siteConfig.musicLibrary`, fallback `siteConfig.cloudMusicIds` |
 | Global shell | all routes | `siteConfig.ts`, `components/Navbar.tsx`, `app/layout.tsx` |
-| AI chat | `/api/chat` | `siteConfig.geminiConfig`, `GEMINI_API_KEY` |
+| AI chat | `/api/chat` | `AI_PROVIDER`, `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`; legacy `GEMINI_API_KEY` |
 
 ## Future Manager Coverage
 
@@ -70,8 +70,9 @@ site changed correctly after save, not only that the manager UI saved data.
 ## Deployment Notes
 
 - Root app build command: `npm run build`.
-- Public Vercel project is bound from the repository root.
-- Manager Vercel deployment is intentionally disabled. Recreate it only after a scoped online-CMS plan exists.
+- Production deploy command on the server: `sudo /usr/local/bin/personalblogweb-deploy deploy`.
+- Server runtime environment file: `/srv/personalblogweb/shared/.env.production`.
+- Manager online deployment is intentionally disabled. Recreate it only after a scoped online-CMS plan exists.
 - Current local backend CORS only allows `localhost` and `127.0.0.1` origins. A deployed manager URL should not be assumed to have write access until this is deliberately configured.
 - Required online check after push:
   - `/` returns 200

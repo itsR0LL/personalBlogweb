@@ -2,9 +2,9 @@
 
 ## Goal
 
-Separate the public Vercel blog and the local manager into two independently maintained repositories:
+Separate the public self-hosted blog and the local manager into two independently maintained repositories:
 
-- `personalBlogweb`: public-facing Next.js blog deployed on Vercel.
+- `personalBlogweb`: public-facing Next.js blog deployed to the self-hosted Docker server.
 - `my-blog-manager`: private, local-only high-privilege manager that writes to a configured public blog path.
 
 ## Current Status
@@ -12,14 +12,15 @@ Separate the public Vercel blog and the local manager into two independently mai
 - Local physical split is complete.
 - Public site checkout: `E:\Project\personalBlogweb`
 - Manager checkout: `E:\Project\my-blog-manager`
-- The manager repository has been initialized locally with `git init`; add a private remote before pushing.
+- The manager repository has its own private remote and remains local-only.
 
 ## Boundary
 
 - The public site must not import or build files from the manager checkout.
-- Vercel must not deploy manager files.
+- The public site deployment must not include manager files.
 - `public/backend_config.json` inside the manager checkout is launcher-generated runtime state and must not be tracked.
 - Manager writes to the public blog only through configured `blogPath` and sync preflight.
+- GitHub is the source handoff for the self-hosted server; it is not an online CMS.
 
 ## Split Readiness Gate
 
@@ -33,7 +34,6 @@ Expected result:
 
 - no hard-coded `E:/Project/personalBlogweb` path inside manager source
 - root `tsconfig.json` excludes `my-blog-manager`
-- `.vercelignore` excludes `my-blog-manager/`
 - `my-blog-manager/public/backend_config.json` is not tracked
 
 ## Private Remote Sequence

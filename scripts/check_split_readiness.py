@@ -12,7 +12,6 @@ MANAGER = ROOT / "my-blog-manager"
 SKIP_DIRS = {
     ".git",
     ".next",
-    ".vercel",
     "node_modules",
     "manager_data",
     "__pycache__",
@@ -73,10 +72,6 @@ def git_ls_files(path: str) -> str:
 
 
 def check_root_boundaries(failures: list[str]) -> None:
-    vercelignore = read_text(ROOT / ".vercelignore")
-    if "my-blog-manager/" not in vercelignore:
-        fail(".vercelignore must exclude my-blog-manager/ from Vercel deploys.", failures)
-
     tsconfig = json.loads(read_text(ROOT / "tsconfig.json"))
     excludes = tsconfig.get("exclude", [])
     if "my-blog-manager" not in excludes and "my-blog-manager/" not in excludes:

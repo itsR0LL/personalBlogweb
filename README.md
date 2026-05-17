@@ -93,8 +93,8 @@ E:\Project\my-blog-manager
 ```
 
 Do not copy it into this public site's `app/manager` route, and do not deploy it
-to Vercel as an online CMS. It is a local high-privilege tool that writes to the
-public blog path configured in its settings page.
+as an online CMS. It is a local high-privilege tool that writes to the public
+blog path configured in its settings page.
 
 Double-click `start-local-manager.bat` from this folder to start the sibling
 manager, or use `E:\Project\my-blog-manager\start_all.bat` directly. The
@@ -112,10 +112,6 @@ Based on `https://github.com/heiehiehi/XinghuisamaBlogs`.
 
 The upstream project is licensed under CC BY-NC 4.0. Keep attribution and do not use this derivative for commercial purposes unless you have compatible permission.
 
-## Deploy on Vercel
-
-Import this project into Vercel as a Next.js project. If you use the optional AI assistant, configure the required AI provider environment variable before enabling it publicly.
-
 ## Self-hosted Docker Deploy
 
 The self-hosted IPv6 server uses Docker and a high-port Nginx entrypoint. The
@@ -129,3 +125,22 @@ on the server as:
 The local manager can call that script over SSH after syncing local content and
 pushing this public repository. The manager app itself remains local-only and is
 not deployed to the server.
+
+Server runtime secrets belong in:
+
+```text
+/srv/personalblogweb/shared/.env.production
+```
+
+For the AI assistant on the self-hosted server, prefer the OpenAI-compatible
+provider configuration:
+
+```text
+AI_PROVIDER=openai-compatible
+AI_BASE_URL=https://api.siliconflow.cn/v1
+AI_MODEL=Qwen/Qwen3-8B
+AI_API_KEY=your-provider-key
+```
+
+The legacy Gemini path is still supported with `AI_PROVIDER=gemini` and
+`GEMINI_API_KEY`. Use `QWEATHER_KEY` for weather. Do not commit those values.

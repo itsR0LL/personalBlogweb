@@ -7,7 +7,7 @@ export async function GET() {
 
   if (!token) {
     console.error("❌ 环境变量 QWEATHER_KEY (Token) 未找到");
-    return NextResponse.json({ code: "500", message: "Token missing" }, { status: 500 });
+    return NextResponse.json({ code: "500", message: "当前运行环境未配置 QWEATHER_KEY" }, { status: 500 });
   }
 
   // 🌟 核心：按照你提供的文档，尝试两个可能的 Host
@@ -28,7 +28,7 @@ export async function GET() {
           // 🌟 按照文档要求的 Header 认证格式
           'Authorization': `Bearer ${token}`,
           'Accept-Encoding': 'gzip',
-          'User-Agent': 'Vercel-Weather-Proxy/1.0'
+          'User-Agent': 'PersonalBlogWeb-SelfHosted/1.0'
         },
         cache: 'no-store'
       });
@@ -51,6 +51,6 @@ export async function GET() {
 
   return NextResponse.json({
     code: "500",
-    message: "认证协议对接失败，请检查是否在 Vercel 填写了正确的 Token"
+    message: "认证协议对接失败，请检查当前运行环境中的 QWEATHER_KEY"
   }, { status: 500 });
 }
