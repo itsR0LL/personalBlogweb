@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { usePathname } from "next/navigation";
 import type { siteConfig } from "../siteConfig";
 import { useRuntimeSiteConfig } from "./RuntimeConfigProvider";
 
@@ -184,9 +185,24 @@ function configuredTracks(config: SiteConfigWithMusic) {
   };
 }
 
+function musicConfigSignature(config: SiteConfigWithMusic) {
+  const library = Array.isArray(config.musicLibrary) ? config.musicLibrary : [];
+  if (library.length > 0) {
+    return JSON.stringify(
+      library.map((track) => ({
+        id: track.id,
+        playbackType: track.playbackType,
+        publicPlayable: track.publicPlayable,
+        lastCheckedAt: track.lastCheckedAt,
+      })),
+    );
+  }
+  return JSON.stringify(config.cloudMusicIds || []);
+}
+
 async function loadRuntimeMusicConfig(fallbackConfig: SiteConfigWithMusic): Promise<SiteConfigWithMusic> {
   try {
-    const response = await fetch("/api/content?collection=music", { cache: "no-store" });
+    const response = await fetch(`/api/content?collection=music&t=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) return fallbackConfig;
     const payload = await response.json();
     if (!payload?.success || !payload.data) return fallbackConfig;
@@ -237,6 +253,7 @@ async function resolvePlayableSong(track: MusicLibraryItem): Promise<MusicSong |
 
 export function MusicProvider({ children }: { children: ReactNode }) {
   const runtimeConfig = useRuntimeSiteConfig() as SiteConfigWithMusic;
+  const pathname = usePathname();
   const [playlist, setPlaylist] = useState<MusicSong[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -252,6 +269,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const [isMuted, setIsMuted] = useState(false);
   const [playMode, setPlayMode] = useState<PlayMode>("loop");
   const audioRef = useRef<HTMLAudioElement>(null);
+  const musicSignatureRef = useRef("");
+  const lastRefreshAtRef = useRef(0);
 
   const currentSong = playlist[currentIndex] ?? null;
   const currentSongId = currentSong?.id;
@@ -260,8 +279,14 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    async function fetchMusicData() {
+    async function fetchMusicData(force = false) {
       const musicConfig = await loadRuntimeMusicConfig(runtimeConfig);
+      const signature = musicConfigSignature(musicConfig);
+      if (!force && signature === musicSignatureRef.current && playlist.length > 0) {
+        setIsLoading(false);
+        return;
+      }
+      musicSignatureRef.current = signature;
       const { tracks, skippedBeforeLoad, usingStructuredLibrary } = configuredTracks(musicConfig);
       setSkippedSongCount(skippedBeforeLoad);
 
@@ -293,12 +318,79 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    fetchMusicData();
+    fetchMusicData(true);
 
     return () => {
       isMounted = false;
     };
   }, [runtimeConfig]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function refreshMusicIfNeeded() {
+      const now = Date.now();
+      if (now - lastRefreshAtRef.current < 8000) return;
+      lastRefreshAtRef.current = now;
+
+      const musicConfig = await loadRuntimeMusicConfig(runtimeConfig);
+      if (!isMounted) return;
+      const signature = musicConfigSignature(musicConfig);
+      if (signature === musicSignatureRef.current) return;
+
+      musicSignatureRef.current = "";
+      setIsLoading(true);
+      const { tracks, skippedBeforeLoad, usingStructuredLibrary } = configuredTracks(musicConfig);
+      setSkippedSongCount(skippedBeforeLoad);
+      setIsPlaying(false);
+
+      if (tracks.length === 0) {
+        setPlaylist([]);
+        setCurrentIndex(0);
+        setCurrentLyric(usingStructuredLibrary ? "音乐库中暂无完整可公开播放的歌曲。" : "请先在管理端同步结构化音乐库。");
+        setLoadError(usingStructuredLibrary ? "当前音乐库没有完整可公开播放的歌曲。" : "旧版音乐 ID 不再直接播放，请通过管理端检测并同步音乐库。");
+        setIsLoading(false);
+        musicSignatureRef.current = signature;
+        return;
+      }
+
+      try {
+        const results = await Promise.all(tracks.map(resolvePlayableSong));
+        if (!isMounted) return;
+        const nextPlaylist = results.filter((song): song is MusicSong => Boolean(song));
+        setPlaylist(nextPlaylist);
+        setCurrentIndex(0);
+        setSkippedSongCount(skippedBeforeLoad + (tracks.length - nextPlaylist.length));
+        setLoadError(nextPlaylist.length ? "" : "已配置的公开音乐暂时无法加载。");
+        setCurrentLyric(nextPlaylist.length ? "音乐列表已刷新" : "暂无完整可公开播放的音乐。");
+        musicSignatureRef.current = signature;
+      } catch {
+        if (!isMounted) return;
+        setPlaylist([]);
+        setCurrentIndex(0);
+        setLoadError("音乐列表刷新失败。");
+        setCurrentLyric("音乐列表刷新失败。");
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    refreshMusicIfNeeded();
+
+    const onFocus = () => refreshMusicIfNeeded();
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") refreshMusicIfNeeded();
+    };
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [pathname, runtimeConfig]);
 
   useEffect(() => {
     if (currentSongId === undefined || currentSongId === null) {
