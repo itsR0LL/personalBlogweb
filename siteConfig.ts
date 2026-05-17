@@ -7,8 +7,8 @@ export const siteConfig = {
   bio: "",
 
   navTitle: "R0L1_",
-  navSuffix: "",
-  navAfter: "の小家",
+  navSuffix: "の",
+  navAfter: "小家",
 
   avatarUrl: "https://v1.lskypro.com/thumbnails/01f4a4584bace1a3b670c6791a0f5f57.png",
 
