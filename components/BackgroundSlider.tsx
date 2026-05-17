@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { siteConfig } from "../siteConfig";
+import { useRuntimeSiteConfig } from "./RuntimeConfigProvider";
 import { useTheme } from "./ThemeProvider";
 
 const randomDelay = () => 9000 + Math.floor(Math.random() * 5000);
@@ -11,14 +11,15 @@ const normalizeImages = (images?: string[]) =>
 
 export default function BackgroundSlider() {
   const { isDark } = useTheme();
-  const fallbackImages = useMemo(() => normalizeImages(siteConfig.bgImages), []);
+  const siteConfig = useRuntimeSiteConfig();
+  const fallbackImages = useMemo(() => normalizeImages(siteConfig.bgImages), [siteConfig.bgImages]);
   const lightImages = useMemo(
     () => normalizeImages(siteConfig.lightBgImages || siteConfig.bgImages),
-    []
+    [siteConfig.bgImages, siteConfig.lightBgImages]
   );
   const darkImages = useMemo(
     () => normalizeImages(siteConfig.darkBgImages || siteConfig.bgImages),
-    []
+    [siteConfig.bgImages, siteConfig.darkBgImages]
   );
   const activeImages = isDark ? darkImages : lightImages;
   const inactiveImages = isDark ? lightImages : darkImages;

@@ -1,5 +1,6 @@
 import re
 import sys
+import os
 from pathlib import Path
 
 
@@ -33,18 +34,28 @@ def should_skip(path: Path) -> bool:
 
 def main() -> int:
     findings: list[str] = []
-    for path in ROOT.rglob("*"):
-        relative = path.relative_to(ROOT)
-        if not path.is_file() or should_skip(relative):
+    for dirpath, dirnames, filenames in os.walk(ROOT):
+        current = Path(dirpath)
+        relative_dir = current.relative_to(ROOT)
+        if should_skip(relative_dir):
+            dirnames[:] = []
             continue
-        try:
-            text = path.read_text(encoding="utf-8", errors="ignore")
-        except OSError:
-            continue
-        for label, pattern in PATTERNS:
-            for match in pattern.finditer(text):
-                line = text.count("\n", 0, match.start()) + 1
-                findings.append(f"{relative}:{line}: {label}")
+
+        dirnames[:] = [dirname for dirname in dirnames if dirname not in SKIP_DIRS]
+
+        for filename in filenames:
+            path = current / filename
+            relative = path.relative_to(ROOT)
+            if should_skip(relative):
+                continue
+            try:
+                text = path.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            for label, pattern in PATTERNS:
+                for match in pattern.finditer(text):
+                    line = text.count("\n", 0, match.start()) + 1
+                    findings.append(f"{relative}:{line}: {label}")
 
     if findings:
         print("Secret scan failed:")

@@ -9,7 +9,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { siteConfig } from "../siteConfig";
+import type { siteConfig } from "../siteConfig";
+import { useRuntimeSiteConfig } from "./RuntimeConfigProvider";
 
 export type LyricLine = {
   time: number;
@@ -183,18 +184,18 @@ function configuredTracks(config: SiteConfigWithMusic) {
   };
 }
 
-async function loadRuntimeMusicConfig(): Promise<SiteConfigWithMusic> {
+async function loadRuntimeMusicConfig(fallbackConfig: SiteConfigWithMusic): Promise<SiteConfigWithMusic> {
   try {
     const response = await fetch("/api/content?collection=music", { cache: "no-store" });
-    if (!response.ok) return siteConfig as SiteConfigWithMusic;
+    if (!response.ok) return fallbackConfig;
     const payload = await response.json();
-    if (!payload?.success || !payload.data) return siteConfig as SiteConfigWithMusic;
+    if (!payload?.success || !payload.data) return fallbackConfig;
     return {
-      ...(siteConfig as SiteConfigWithMusic),
+      ...fallbackConfig,
       ...payload.data,
     };
   } catch {
-    return siteConfig as SiteConfigWithMusic;
+    return fallbackConfig;
   }
 }
 
@@ -235,6 +236,7 @@ async function resolvePlayableSong(track: MusicLibraryItem): Promise<MusicSong |
 }
 
 export function MusicProvider({ children }: { children: ReactNode }) {
+  const runtimeConfig = useRuntimeSiteConfig() as SiteConfigWithMusic;
   const [playlist, setPlaylist] = useState<MusicSong[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -259,7 +261,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
 
     async function fetchMusicData() {
-      const musicConfig = await loadRuntimeMusicConfig();
+      const musicConfig = await loadRuntimeMusicConfig(runtimeConfig);
       const { tracks, skippedBeforeLoad, usingStructuredLibrary } = configuredTracks(musicConfig);
       setSkippedSongCount(skippedBeforeLoad);
 
@@ -296,7 +298,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [runtimeConfig]);
 
   useEffect(() => {
     if (currentSongId === undefined || currentSongId === null) {

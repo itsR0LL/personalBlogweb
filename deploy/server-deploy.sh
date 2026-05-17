@@ -23,6 +23,7 @@ Usage:
   personalblogweb-deploy status
   personalblogweb-deploy content-status
   personalblogweb-deploy content-activate /tmp/content-bundle-dir
+  personalblogweb-deploy content-rollback
 EOF
 }
 
@@ -104,6 +105,13 @@ import pathlib
 import sys
 
 root = pathlib.Path(sys.argv[1])
+resolved_root = root.resolve()
+for item in root.rglob("*"):
+    if item.is_symlink():
+        raise SystemExit(f"content bundle contains symlink: {item}")
+    resolved_item = item.resolve()
+    if resolved_root != resolved_item and resolved_root not in resolved_item.parents:
+        raise SystemExit(f"content bundle escapes root: {item}")
 for name in ["manifest.json", "site.json", "albums.json", "projects.json", "friends.json", "music.json"]:
     with (root / name).open("r", encoding="utf-8") as f:
         json.load(f)
@@ -138,6 +146,31 @@ PY
   rm -rf "$CONTENT_CURRENT_LINK"
   ln -sfn "$release_dir" "$CONTENT_CURRENT_LINK"
   log "content activated: $release_dir"
+}
+
+rollback_content() {
+  ensure_layout
+  local current_path=""
+  current_path="$(readlink -f "$CONTENT_CURRENT_LINK" 2>/dev/null || true)"
+  local previous_release=""
+  while IFS= read -r release_dir; do
+    local resolved_release
+    resolved_release="$(readlink -f "$release_dir" 2>/dev/null || true)"
+    if [[ -n "$resolved_release" && "$resolved_release" != "$current_path" ]]; then
+      previous_release="$release_dir"
+      break
+    fi
+  done < <(find "$CONTENT_RELEASES_DIR" -mindepth 1 -maxdepth 1 -type d | sort -r)
+
+  if [[ -z "$previous_release" ]]; then
+    log "no previous content release available"
+    return 1
+  fi
+
+  validate_content_bundle "$previous_release"
+  ln -sfn "$previous_release" "$CONTENT_CURRENT_LINK"
+  log "content rolled back: $previous_release"
+  content_status
 }
 
 restore_previous() {
@@ -278,6 +311,9 @@ main() {
       ;;
     content-activate)
       activate_content "${2:-}"
+      ;;
+    content-rollback)
+      rollback_content
       ;;
     *)
       usage

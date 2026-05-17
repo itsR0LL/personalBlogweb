@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-// 🌟 引入咱们的控制中心配置
-import { siteConfig } from '../siteConfig';
+import { useRuntimeSiteConfig } from './RuntimeConfigProvider';
 
 export default function SiteDashboard() {
   const [timeStr, setTimeStr] = useState('');
   const [uptimeStr, setUptimeStr] = useState('');
+  const siteConfig = useRuntimeSiteConfig();
 
   // 🌟 从配置中读取建站时间
   const START_DATE = new Date(siteConfig.buildDate || '2026-03-23T00:00:00').getTime();

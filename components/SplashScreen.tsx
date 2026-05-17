@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { siteConfig } from '../siteConfig';
+import { useRuntimeSiteConfig } from './RuntimeConfigProvider';
 
 export default function SplashScreen() {
   const [show, setShow] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const reduceMotion = useReducedMotion();
+  const siteConfig = useRuntimeSiteConfig();
 
   useEffect(() => {
     setIsMounted(true);

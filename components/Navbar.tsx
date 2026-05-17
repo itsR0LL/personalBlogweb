@@ -5,14 +5,15 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { siteConfig } from '../siteConfig';
 import { motionTransition, motionVariants } from '../lib/motion';
+import { useRuntimeSiteConfig } from './RuntimeConfigProvider';
 
 export default function Navbar() {
   const [showNav, setShowNav] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const siteConfig = useRuntimeSiteConfig();
 
   useEffect(() => {
     setIsMobileMenuOpen(false);

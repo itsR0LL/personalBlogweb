@@ -6,7 +6,6 @@ import { ThemeProvider } from "../components/ThemeProvider";
 import BackgroundEffects from "../components/BackgroundEffects";
 import { MusicProvider } from "../components/MusicProvider";
 import FloatingPlayer from "../components/FloatingPlayer";
-import { siteConfig } from "../siteConfig";
 import ClickEffect from "../components/ClickEffect";
 import BackgroundSlider from "../components/BackgroundSlider";
 import FloatingThemePanel from "../components/FloatingThemePanel";
@@ -15,6 +14,8 @@ import CyberCat from '../components/CyberCat';
 import DanmakuBackground from '../components/DanmakuBackground';
 import MotionProvider from '../components/MotionProvider';
 import ThemeTransitionVeil from '../components/motion/ThemeTransitionVeil';
+import { RuntimeConfigProvider } from "../components/RuntimeConfigProvider";
+import { getRuntimeSiteConfig } from "../lib/contentSource";
 
 type BackgroundVisualConfig = {
   backgroundBlurPx?: number;
@@ -39,22 +40,31 @@ const notoSerif = Noto_Serif_SC({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: siteConfig.title,
-  description: siteConfig.bio,
-  icons: {
-    icon: siteConfig.faviconUrl,
-    apple: siteConfig.faviconUrl,
-  },
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const runtimeConfig = getRuntimeSiteConfig();
+  return {
+    title: runtimeConfig.title,
+    description: runtimeConfig.bio,
+    icons: {
+      icon: runtimeConfig.faviconUrl,
+      apple: runtimeConfig.faviconUrl,
+    },
+  };
+}
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const visualConfig = siteConfig as typeof siteConfig & BackgroundVisualConfig;
+  const runtimeConfig = getRuntimeSiteConfig();
+  const visualConfig = runtimeConfig as typeof runtimeConfig & BackgroundVisualConfig;
   const backgroundBlurPx = clampNumber(visualConfig.backgroundBlurPx, 0, 16, 4);
   const backgroundOverlayLight = clampNumber(visualConfig.backgroundOverlayLight, 0, 0.6, 0.22);
   const backgroundOverlayDark = clampNumber(visualConfig.backgroundOverlayDark, 0, 0.7, 0.32);
   const gradientIntensity = clampNumber(visualConfig.gradientIntensity, 0, 1, 0.48);
   const gradientGlowBlurPx = clampNumber(visualConfig.gradientGlowBlurPx, 40, 140, 72);
+  const themeColors = Array.isArray(runtimeConfig.themeColors) && runtimeConfig.themeColors.length > 0
+    ? runtimeConfig.themeColors
+    : ["#e2e8f0", "#bfdbfe", "#bbf7d0", "#fde68a"];
 
   return (
     <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} ${notoSerif.variable} h-full antialiased`} suppressHydrationWarning>
@@ -85,6 +95,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="w-full overflow-x-hidden min-h-full flex flex-col relative transition-colors duration-[900ms] bg-slate-50 dark:bg-slate-950 font-serif">
         <ThemeProvider>
           <MotionProvider>
+          <RuntimeConfigProvider config={runtimeConfig}>
 
           <SplashScreen />
 
@@ -110,9 +121,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <div
                   className="absolute inset-0 z-[-8] mix-blend-color transition-opacity duration-[900ms] transform-gpu"
                   style={{
-                    background: `linear-gradient(-45deg, ${siteConfig.themeColors.join(', ')})`,
+                    background: `linear-gradient(-45deg, ${themeColors.join(', ')})`,
                     backgroundSize: '400% 400%',
-                    opacity: siteConfig.useGradient ? gradientIntensity : Math.min(0.24, gradientIntensity * 0.35),
+                    opacity: runtimeConfig.useGradient ? gradientIntensity : Math.min(0.24, gradientIntensity * 0.35),
                     animation: 'gradientMove 15s ease infinite' // 🌟 全端保留渐变流动
                   }}
                 ></div>
@@ -167,6 +178,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <div className="hidden md:block">
             <CyberCat />
           </div>
+          </RuntimeConfigProvider>
           </MotionProvider>
 
         </ThemeProvider>

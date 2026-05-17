@@ -14,7 +14,7 @@ Content updates and code deployments are now separate:
 
 ```text
 content update -> local manager content bundle -> SSH upload -> shared/content/current
-code update -> GitHub -> Docker rebuild -> Nginx high port
+code update -> GitHub backup + SSH source archive upload -> Docker rebuild -> Nginx high port
 ```
 
 ## Current Public Entry
@@ -52,8 +52,10 @@ Supported server commands:
 ```text
 personalblogweb-deploy status
 personalblogweb-deploy deploy
+personalblogweb-deploy deploy-upload /tmp/source.tar.gz [commit]
 personalblogweb-deploy content-status
 personalblogweb-deploy content-activate /tmp/content-bundle-dir
+personalblogweb-deploy content-rollback
 ```
 
 ## Runtime Secrets
@@ -99,7 +101,7 @@ npm run secret:scan
 ```
 
 4. For content-only changes, use the manager control page `发布内容`. This uploads a content bundle and does not rebuild Docker.
-5. For code changes, commit and push `personalBlogweb` to GitHub, then use `部署代码` from the manager control page or SSH to run the server deploy command.
+5. For code changes, use `部署代码` from the manager control page. The manager still commits and pushes GitHub, but the server build uses an uploaded source archive so it does not depend on server-side GitHub access.
 6. Verify the public entry, `/api/deploy-info`, and key pages:
 
 ```text
@@ -128,7 +130,7 @@ data/deploy_config.json
 
 ## Rollback
 
-Rollback should happen on the server by switching to the previous release or re-running the deploy script against a known good commit. Do not use the manager as a remote shell or online admin panel.
+Content rollback uses `personalblogweb-deploy content-rollback` or the manager control page `回滚内容`; it only switches the active content bundle and does not rebuild Docker. Code rollback still requires switching to a known good code release or deploying a known good source archive. Do not use the manager as a remote shell or online admin panel.
 
 ## Notes
 

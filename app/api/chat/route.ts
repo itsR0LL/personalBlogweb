@@ -1,7 +1,7 @@
 // app/api/chat/route.ts
-import { siteConfig } from '../../../siteConfig';
+import { getRuntimeSiteConfig } from '../../../lib/contentSource';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 type AiProvider = 'gemini' | 'openai-compatible';
 
@@ -79,6 +79,7 @@ function getProvider(): AiProvider {
 }
 
 function getRuntimeConfig(): AiRuntimeConfig {
+  const siteConfig = getRuntimeSiteConfig();
   const provider = getProvider();
   const maxOutputTokens = siteConfig.geminiConfig.maxOutputTokens;
   const temperature = siteConfig.geminiConfig.temperature;

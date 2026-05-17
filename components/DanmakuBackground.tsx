@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { siteConfig } from '../siteConfig';
+import { useRuntimeSiteConfig } from './RuntimeConfigProvider';
 
 interface DanmakuItem {
   id: number;
@@ -16,6 +16,7 @@ export default function DanmakuBackground() {
   const [danmakus, setDanmakus] = useState<DanmakuItem[]>([]);
   const reduceMotion = useReducedMotion();
   const [isMounted, setIsMounted] = useState(false);
+  const siteConfig = useRuntimeSiteConfig();
 
   useEffect(() => {
     setIsMounted(true);
@@ -41,7 +42,7 @@ export default function DanmakuBackground() {
       });
     }
     setDanmakus(generatedDanmakus);
-  }, [isMounted, reduceMotion]);
+  }, [isMounted, reduceMotion, siteConfig.danmakuList]);
 
   if (isMounted && reduceMotion) return null;
 

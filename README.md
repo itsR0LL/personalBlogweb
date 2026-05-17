@@ -122,9 +122,11 @@ on the server as:
 /usr/local/bin/personalblogweb-deploy
 ```
 
-The local manager can call that script over SSH after syncing local content and
-pushing this public repository. The manager app itself remains local-only and is
-not deployed to the server.
+The local manager can call that script over SSH after syncing local content.
+Code deploys still push this public repository for backup, but the server build
+uses an uploaded source archive because the server may not be able to reach
+GitHub directly. The manager app itself remains local-only and is not deployed
+to the server.
 
 Content-only updates can be published from the local manager control page without
 rebuilding Docker. The public site reads the active content bundle from:
@@ -135,6 +137,12 @@ rebuilding Docker. The public site reads the active content bundle from:
 
 Use `/api/deploy-info` to verify both the running code commit and the active
 content version.
+
+Content rollback is available through the manager control page or:
+
+```text
+personalblogweb-deploy content-rollback
+```
 
 Server runtime secrets belong in:
 

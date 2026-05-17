@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
-import { siteConfig } from '../../siteConfig';
+import { useRuntimeSiteConfig } from '../../components/RuntimeConfigProvider';
 
 type Chatter = {
   slug: string;
@@ -18,6 +18,7 @@ type Chatter = {
 export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTag, setActiveTag] = useState("全部");
+  const siteConfig = useRuntimeSiteConfig();
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();

@@ -13,6 +13,8 @@ export type ContentManifest = {
   itemCounts?: Record<string, number>;
 };
 
+export type RuntimeSiteConfig = typeof bundledSiteConfig & Record<string, any>;
+
 const DEFAULT_CONTENT_DIR = "/srv/personalblogweb/shared/content/current";
 
 function contentDirCandidate() {
@@ -57,7 +59,7 @@ export function getContentManifest(): ContentManifest | null {
   return readContentJson<ContentManifest | null>("manifest.json", null);
 }
 
-export function getRuntimeSiteConfig() {
+export function getRuntimeSiteConfig(): RuntimeSiteConfig {
   const site = readContentJson<Record<string, unknown>>("site.json", {});
   const music = readContentJson<Record<string, unknown>>("music.json", {});
   const config: Record<string, any> = {
@@ -72,7 +74,7 @@ export function getRuntimeSiteConfig() {
       clientSecret: "",
     };
   }
-  return config;
+  return config as RuntimeSiteConfig;
 }
 
 export function getRuntimeAlbums() {

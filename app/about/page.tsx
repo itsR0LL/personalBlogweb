@@ -21,10 +21,13 @@ import 'katex/dist/katex.min.css';
 import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
 import BlogReveal from '../../components/motion/BlogReveal';
-import { siteConfig } from '../../siteConfig';
+import { getRuntimeSiteConfig } from '../../lib/contentSource';
 import Comments from '../../components/Comments';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AboutPage() {
+  const siteConfig = getRuntimeSiteConfig();
   const fullPath = path.join(process.cwd(), 'app', 'about', 'about.md');
   let contentHtml = "博主很懒，还没有写自我介绍哦...";
   let coverImage = "https://bu.dusays.com/2026/03/24/69c23dc278c78.jpg";

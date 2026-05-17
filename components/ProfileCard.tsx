@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
-import { siteConfig } from '../siteConfig';
 import { useToast } from './ToastProvider';
+import { useRuntimeSiteConfig } from './RuntimeConfigProvider';
 
 export default function ProfileCard({ postCount, chatterCount, photoCount }: { postCount: number, chatterCount: number, photoCount: number }) {
   const router = useRouter();
   const { showToast } = useToast();
+  const siteConfig = useRuntimeSiteConfig();
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
