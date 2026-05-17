@@ -15,10 +15,14 @@ RUN npm run build
 
 FROM ${NODE_IMAGE} AS runner
 WORKDIR /app
+ARG APP_COMMIT=unknown
+ARG APP_BUILD_TIME=unknown
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+ENV APP_COMMIT=${APP_COMMIT}
+ENV APP_BUILD_TIME=${APP_BUILD_TIME}
 
 RUN groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs nextjs

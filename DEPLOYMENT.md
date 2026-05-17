@@ -10,6 +10,13 @@ local manager -> personalBlogweb checkout -> GitHub -> self-hosted Docker server
 
 The manager stays local-only. Do not copy `my-blog-manager` into the public site and do not expose it as an online CMS.
 
+Content updates and code deployments are now separate:
+
+```text
+content update -> local manager content bundle -> SSH upload -> shared/content/current
+code update -> GitHub -> Docker rebuild -> Nginx high port
+```
+
 ## Current Public Entry
 
 The current test entry is:
@@ -30,12 +37,23 @@ The server uses Docker and a host Nginx high-port entrypoint.
 /srv/personalblogweb/shared
 /srv/personalblogweb/logs
 /srv/personalblogweb/shared/.env.production
+/srv/personalblogweb/shared/content/current
+/srv/personalblogweb/shared/content/releases
 ```
 
 The restricted server-side deploy command is installed as:
 
 ```text
 /usr/local/bin/personalblogweb-deploy
+```
+
+Supported server commands:
+
+```text
+personalblogweb-deploy status
+personalblogweb-deploy deploy
+personalblogweb-deploy content-status
+personalblogweb-deploy content-activate /tmp/content-bundle-dir
 ```
 
 ## Runtime Secrets
@@ -80,9 +98,9 @@ npm run build
 npm run secret:scan
 ```
 
-4. Commit and push `personalBlogweb` to GitHub.
-5. Use the manager deploy page or SSH to run the server deploy command.
-6. Verify the public entry and key pages:
+4. For content-only changes, use the manager control page `发布内容`. This uploads a content bundle and does not rebuild Docker.
+5. For code changes, commit and push `personalBlogweb` to GitHub, then use `部署代码` from the manager control page or SSH to run the server deploy command.
+6. Verify the public entry, `/api/deploy-info`, and key pages:
 
 ```text
 /
@@ -93,6 +111,8 @@ npm run secret:scan
 /api/chat
 /api/weather
 ```
+
+The first rollout of content publishing requires one normal code deployment so the server has the updated `personalblogweb-deploy content-*` commands and the Docker container has the content directory mounted.
 
 ## Manager Boundary
 

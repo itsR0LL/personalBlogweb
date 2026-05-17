@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import BackButton from '../../components/BackButton';
-import { friendsData } from '../../data/friends';
+import { Friend, friendsData as bundledFriends } from '../../data/friends';
 import Comments from '../../components/Comments';
 
 // Framer Motion 动画变体：交错子元素
@@ -21,7 +21,7 @@ const itemVariants: Variants = {
   show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 24 } }
 };
 
-export default function FriendsBoard() {
+export default function FriendsBoard({ friends = bundledFriends }: { friends?: Friend[] }) {
   // 🌟 控制复制按钮的状态
   const [isCopied, setIsCopied] = useState(false);
 
@@ -60,7 +60,7 @@ export default function FriendsBoard() {
         animate="show"
         className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6"
       >
-        {friendsData.map((friend) => (
+        {friends.map((friend) => (
           <motion.div key={friend.id} variants={itemVariants} className="h-full">
             <a
               href={friend.url}

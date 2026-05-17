@@ -6,17 +6,18 @@ import Link from 'next/link';
 import Navbar from '../components/Navbar';
 import PageTransition from '../components/PageTransition';
 import SearchBar from '../components/SearchBar';
-import { siteConfig } from '../siteConfig';
 import CloudPlayer from '../components/CloudPlayer';
 import ProfileCard from '../components/ProfileCard';
 import SiteDashboard from '../components/SiteDashboard';
-import { albums } from '../data/albums';
 import LyricBar from '../components/LyricBar';
 import { ToastProvider } from '../components/ToastProvider';
+import { getContentCollectionDir, getRuntimeAlbums, getRuntimeSiteConfig } from '../lib/contentSource';
 
 import LatestPostsCarousel from '../components/LatestPostsCarousel';
 import LatestChatterCarousel from '../components/LatestChatterCarousel';
 import GsapHomeIntro from '../components/motion/GsapHomeIntro';
+
+export const dynamic = 'force-dynamic';
 
 function formatUpdateTime(dateString: string) {
   if (!dateString || dateString === '1970-01-01') return '刚刚更新';
@@ -34,7 +35,9 @@ function formatUpdateTime(dateString: string) {
 }
 
 export default function Home() {
-  const postsDirectory = path.join(process.cwd(), 'posts');
+  const runtimeConfig = getRuntimeSiteConfig();
+  const albums = getRuntimeAlbums();
+  const postsDirectory = getContentCollectionDir('posts');
   let allPosts: any[] = [];
   try {
     if (fs.existsSync(postsDirectory)) {
@@ -60,9 +63,9 @@ export default function Home() {
       });
     }
   } catch {}
-  const top5Posts = allPosts.length > 0 ? allPosts.slice(0, 5) : [{ slug: 'none', title: '暂无文章', description: '快去写第一篇吧！', cover: siteConfig.defaultPostCover, date: '', formattedDate: '' }];
+  const top5Posts = allPosts.length > 0 ? allPosts.slice(0, 5) : [{ slug: 'none', title: '暂无文章', description: '快去写第一篇吧！', cover: runtimeConfig.defaultPostCover, date: '', formattedDate: '' }];
 
-  const chattersDirectory = path.join(process.cwd(), 'chatters');
+  const chattersDirectory = getContentCollectionDir('chatters');
   let allChatters: any[] = [];
   try {
     if (fs.existsSync(chattersDirectory)) {
@@ -85,7 +88,7 @@ export default function Home() {
 
   const chatterCount = allChatters.length;
   const realPhotoCount = albums.reduce((total, album) => total + album.photos.length, 0);
-  const latestAlbum = albums.length > 0 ? albums[0] : { id: '', title: '照片墙', description: '查看摄影', cover: siteConfig.photoWallImage, date: '' };
+  const latestAlbum = albums.length > 0 ? albums[0] : { id: '', title: '照片墙', description: '查看摄影', cover: runtimeConfig.photoWallImage, date: '' };
 
   return (
     <ToastProvider>

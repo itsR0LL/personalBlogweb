@@ -5,7 +5,9 @@ import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
 import BlogReveal from '../../components/motion/BlogReveal';
 import MomentList from './MomentList';
-import { siteConfig } from '../../siteConfig';
+import { getContentCollectionDir, getRuntimeSiteConfig } from '../../lib/contentSource';
+
+export const dynamic = 'force-dynamic';
 
 type Moment = {
   id: string;
@@ -21,7 +23,8 @@ export const metadata = {
 };
 
 export default function MomentsPage() {
-  const momentsDirectory = path.join(process.cwd(), 'moments');
+  const runtimeConfig = getRuntimeSiteConfig();
+  const momentsDirectory = getContentCollectionDir('moments');
   let allMoments: Moment[] = [];
 
   try {
@@ -52,8 +55,8 @@ export default function MomentsPage() {
           <div data-blog-reveal className="flex-1 flex flex-col">
             <MomentList
               moments={allMoments}
-              authorName={siteConfig.authorName}
-              avatarUrl={siteConfig.avatarUrl}
+              authorName={runtimeConfig.authorName}
+              avatarUrl={runtimeConfig.avatarUrl}
             />
           </div>
         </BlogReveal>

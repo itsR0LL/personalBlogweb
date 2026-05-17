@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
       args:
         NODE_IMAGE: ${NODE_IMAGE:-docker.m.daocloud.io/library/node:22-bookworm-slim}
+        APP_COMMIT: ${APP_COMMIT:-unknown}
+        APP_BUILD_TIME: ${APP_BUILD_TIME:-unknown}
     image: personalblogweb:local
     container_name: personalblogweb
     restart: unless-stopped
@@ -15,6 +17,11 @@ services:
       NEXT_TELEMETRY_DISABLED: "1"
       PORT: "3000"
       HOSTNAME: 0.0.0.0
+      APP_COMMIT: ${APP_COMMIT:-unknown}
+      APP_BUILD_TIME: ${APP_BUILD_TIME:-unknown}
+      PERSONALBLOG_CONTENT_DIR: /srv/personalblogweb/shared/content/current
+    volumes:
+      - /srv/personalblogweb/shared/content:/srv/personalblogweb/shared/content:ro
     ports:
       - "127.0.0.1:13000:3000"
     networks:

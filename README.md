@@ -126,6 +126,16 @@ The local manager can call that script over SSH after syncing local content and
 pushing this public repository. The manager app itself remains local-only and is
 not deployed to the server.
 
+Content-only updates can be published from the local manager control page without
+rebuilding Docker. The public site reads the active content bundle from:
+
+```text
+/srv/personalblogweb/shared/content/current
+```
+
+Use `/api/deploy-info` to verify both the running code commit and the active
+content version.
+
 Server runtime secrets belong in:
 
 ```text

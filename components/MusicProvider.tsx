@@ -165,8 +165,7 @@ function isRuntimePreviewStream(track: MusicLibraryItem, actualDurationSeconds: 
   return actualDurationMs <= 45000 && ratio < 0.65;
 }
 
-function configuredTracks() {
-  const config = siteConfig as SiteConfigWithMusic;
+function configuredTracks(config: SiteConfigWithMusic) {
   const library = Array.isArray(config.musicLibrary) ? config.musicLibrary : [];
   if (library.length > 0) {
     const tracks = library.filter(isTrustedFullTrack);
@@ -182,6 +181,21 @@ function configuredTracks() {
     skippedBeforeLoad: (config.cloudMusicIds || []).length,
     usingStructuredLibrary: false,
   };
+}
+
+async function loadRuntimeMusicConfig(): Promise<SiteConfigWithMusic> {
+  try {
+    const response = await fetch("/api/content?collection=music", { cache: "no-store" });
+    if (!response.ok) return siteConfig as SiteConfigWithMusic;
+    const payload = await response.json();
+    if (!payload?.success || !payload.data) return siteConfig as SiteConfigWithMusic;
+    return {
+      ...(siteConfig as SiteConfigWithMusic),
+      ...payload.data,
+    };
+  } catch {
+    return siteConfig as SiteConfigWithMusic;
+  }
 }
 
 async function resolvePlayableSong(track: MusicLibraryItem): Promise<MusicSong | null> {
@@ -245,7 +259,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
 
     async function fetchMusicData() {
-      const { tracks, skippedBeforeLoad, usingStructuredLibrary } = configuredTracks();
+      const musicConfig = await loadRuntimeMusicConfig();
+      const { tracks, skippedBeforeLoad, usingStructuredLibrary } = configuredTracks(musicConfig);
       setSkippedSongCount(skippedBeforeLoad);
 
       if (tracks.length === 0) {

@@ -4,13 +4,16 @@ import matter from 'gray-matter';
 import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
 import BlogReveal from '../../components/motion/BlogReveal';
-import { siteConfig } from '../../siteConfig';
 import TimelineClient from '../../components/TimelineClient';
 // 🌟 1. 引入 ToastProvider 喵！
 import { ToastProvider } from '../../components/ToastProvider';
+import { getContentCollectionDir, getRuntimeSiteConfig } from '../../lib/contentSource';
+
+export const dynamic = 'force-dynamic';
 
 export default function Timeline() {
-  const postsDirectory = path.join(process.cwd(), 'posts');
+  const runtimeConfig = getRuntimeSiteConfig();
+  const postsDirectory = getContentCollectionDir('posts');
   let posts: any[] = [];
   let tagCounts: Record<string, number> = {};
 
@@ -37,7 +40,7 @@ export default function Timeline() {
           date: data.date || '1970-01-01',
           description: data.description || '',
           tags: postTags,
-          cover: data.cover || siteConfig.defaultPostCover,
+          cover: data.cover || runtimeConfig.defaultPostCover,
         });
       });
 

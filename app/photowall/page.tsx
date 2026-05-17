@@ -5,11 +5,12 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
-import { albums, Album } from '../../data/albums';
+import { albums as bundledAlbums, Album } from '../../data/albums';
 
 gsap.registerPlugin(useGSAP);
 
 export default function PhotoWallPage() {
+  const [albums, setAlbums] = useState<Album[]>(bundledAlbums);
   const [currentAlbum, setCurrentAlbum] = useState<Album | null>(null);
   const [selectedImage, setSelectedImage] = useState<{url: string, caption?: string} | null>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
@@ -17,6 +18,19 @@ export default function PhotoWallPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/content?collection=albums', { cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => {
+        if (!cancelled && Array.isArray(payload?.data)) setAlbums(payload.data);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     setIsTransitioning(true);

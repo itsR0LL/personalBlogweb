@@ -5,6 +5,7 @@ import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
 import BlogReveal from '../../components/motion/BlogReveal';
 import ChatterBoard from './ChatterBoard';
+import { getContentCollectionDir } from '../../lib/contentSource';
 
 type ChatterSummary = {
   slug: string;
@@ -21,8 +22,10 @@ export const metadata = {
   description: "Short notes and idea fragments",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function ChatterPage() {
-  const chattersDirectory = path.join(process.cwd(), 'chatters');
+  const chattersDirectory = getContentCollectionDir('chatters');
   let chatters: ChatterSummary[] = [];
 
   try {

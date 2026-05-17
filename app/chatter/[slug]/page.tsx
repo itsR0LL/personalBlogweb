@@ -22,14 +22,16 @@ import 'highlight.js/styles/atom-one-dark.css';
 import Navbar from '../../../components/Navbar';
 import PageTransition from '../../../components/PageTransition';
 import BlogReveal from '../../../components/motion/BlogReveal';
-import { siteConfig } from '../../../siteConfig';
 import ClientSocials from '../../../components/ClientSocials';
 import SidebarLyric from '../../../components/SidebarLyric';
 import BackButton from '../../../components/BackButton';
 import Comments from '../../../components/Comments';
+import { getContentCollectionDir, getRuntimeSiteConfig } from '../../../lib/contentSource';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateStaticParams() {
-  const chattersDirectory = path.join(process.cwd(), 'chatters');
+  const chattersDirectory = getContentCollectionDir('chatters');
   if (!fs.existsSync(chattersDirectory)) return [];
   const filenames = fs.readdirSync(chattersDirectory);
   return filenames
@@ -40,7 +42,8 @@ export async function generateStaticParams() {
 }
 
 async function getChatterData(slug: string) {
-  const fullPath = path.join(process.cwd(), 'chatters', `${slug}.md`);
+  const runtimeConfig = getRuntimeSiteConfig();
+  const fullPath = path.join(getContentCollectionDir('chatters'), `${slug}.md`);
   const fileContents = fs.readFileSync(fullPath, 'utf8');
   const { data, content } = matter(fileContents);
 
@@ -64,12 +67,12 @@ async function getChatterData(slug: string) {
     date: data.date,
     mood: data.mood,
     tags: data.tags && Array.isArray(data.tags) ? data.tags : [],
-    cover: data.cover || siteConfig.defaultPostCover
+    cover: data.cover || runtimeConfig.defaultPostCover
   };
 }
 
 function getRecentChatters(currentSlug: string) {
-  const chattersDirectory = path.join(process.cwd(), 'chatters');
+  const chattersDirectory = getContentCollectionDir('chatters');
   let fileNames: string[] = [];
   try { fileNames = fs.readdirSync(chattersDirectory).filter(f => f.endsWith('.md')); } catch(e) {}
   if (!fileNames) return [];
@@ -96,6 +99,7 @@ function generateCalendarMatrix(year: number, month: number, targetDay: number) 
 
 export default async function ChatterDetail({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
+  const runtimeConfig = getRuntimeSiteConfig();
   const chatterData = await getChatterData(resolvedParams.slug);
   const recentChatters = getRecentChatters(resolvedParams.slug);
 
@@ -211,10 +215,10 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
           <aside data-blog-reveal className="w-full lg:w-[320px] flex flex-col gap-6 flex-shrink-0">
             <div className="bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-3xl p-6 border border-white/40 dark:border-white/10 shadow-xl text-center">
               <div className="w-20 h-20 mx-auto rounded-full p-1 bg-gradient-to-tr from-indigo-500 to-purple-500 shadow-md mb-4 hover:rotate-3 transition-transform">
-                <img src={siteConfig.avatarUrl} alt="avatar" className="w-full h-full rounded-full object-cover bg-white" />
+                <img src={runtimeConfig.avatarUrl} alt="avatar" className="w-full h-full rounded-full object-cover bg-white" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{siteConfig.authorName}</h3>
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium mb-4">{siteConfig.bio}</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{runtimeConfig.authorName}</h3>
+              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium mb-4">{runtimeConfig.bio}</p>
               <ClientSocials />
             </div>
 
