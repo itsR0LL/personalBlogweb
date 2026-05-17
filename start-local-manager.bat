@@ -1,65 +1,28 @@
 @echo off
-setlocal
+setlocal EnableExtensions
 chcp 65001 >nul
+title personalBlogweb - start local manager
 
 set "ROOT_DIR=%~dp0"
 set "MANAGER_DIR=%ROOT_DIR%..\my-blog-manager"
+set "MANAGER_START=%MANAGER_DIR%\start_all.bat"
 
-echo === Local Blog Manager Launcher ===
+echo ========================================
+echo   personalBlogweb local manager proxy
+echo ========================================
+echo.
 
-if not exist "%MANAGER_DIR%\run_me.py" (
-  echo ERROR: Cannot find "%MANAGER_DIR%\run_me.py".
-  echo Expected sibling manager checkout: "%MANAGER_DIR%"
+if not exist "%MANAGER_START%" (
+  echo [ERROR] Cannot find "%MANAGER_START%".
+  echo [INFO] Expected sibling manager checkout: "%MANAGER_DIR%"
   pause
   exit /b 1
 )
 
-where node >nul 2>&1
-if errorlevel 1 (
-  echo ERROR: Node.js was not found. Install Node.js before starting the manager.
-  pause
-  exit /b 1
-)
+echo [INFO] Forwarding to sibling manager start script.
+echo [INFO] Manager directory: %MANAGER_DIR%
+echo [INFO] Default mode is dev, so manager source edits show immediately.
+echo.
 
-where npm >nul 2>&1
-if errorlevel 1 (
-  echo ERROR: npm was not found. Install Node.js/npm before starting the manager.
-  pause
-  exit /b 1
-)
-
-set "PYTHON_CMD="
-py -3.10 --version >nul 2>&1
-if not errorlevel 1 set "PYTHON_CMD=py -3.10"
-
-if not defined PYTHON_CMD (
-  py -3 --version >nul 2>&1
-  if not errorlevel 1 set "PYTHON_CMD=py -3"
-)
-
-if not defined PYTHON_CMD (
-  python --version >nul 2>&1
-  if not errorlevel 1 set "PYTHON_CMD=python"
-)
-
-if not defined PYTHON_CMD (
-  echo ERROR: Python was not found. Install Python 3.10+ before starting the manager.
-  pause
-  exit /b 1
-)
-
-cd /d "%MANAGER_DIR%"
-
-echo Manager directory: %CD%
-echo Starting local Next.js UI and Python backend...
-echo A Blog Manager window should open after dependencies are checked.
-
-%PYTHON_CMD% run_me.py
-if errorlevel 1 (
-  echo.
-  echo ERROR: Local Blog Manager failed to start.
-  pause
-  exit /b 1
-)
-
+call "%MANAGER_START%" %*
 endlocal

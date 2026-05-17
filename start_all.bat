@@ -7,9 +7,15 @@ set "ROOT_DIR=%~dp0"
 set "APP_PORT=3000"
 set "APP_URL=http://127.0.0.1:%APP_PORT%"
 
+if not "%~1"=="" set "APP_PORT=%~1"
+set "APP_URL=http://127.0.0.1:%APP_PORT%"
+
 echo ========================================
 echo   personalBlogweb public site - start
 echo ========================================
+echo.
+echo [INFO] Local dev URL: %APP_URL%
+echo [INFO] This script only starts the public blog, not my-blog-manager.
 echo.
 
 where node >nul 2>&1
@@ -48,7 +54,8 @@ if defined PORT_PID (
 )
 
 echo [INFO] Starting Next.js dev server on %APP_URL%
-start "personalBlogweb-public-dev" cmd /k "cd /d ""%ROOT_DIR%"" && npm run dev -- --hostname 127.0.0.1 --port %APP_PORT%"
+set "NEXT_TELEMETRY_DISABLED=1"
+start "personalBlogweb-public-dev" cmd /k "cd /d ""%ROOT_DIR%"" && set ""NEXT_TELEMETRY_DISABLED=1"" && npm run dev -- --hostname 127.0.0.1 --port %APP_PORT%"
 
 echo [INFO] Waiting for startup...
 timeout /t 4 /nobreak >nul
