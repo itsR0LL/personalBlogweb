@@ -22,7 +22,7 @@ function json(data: unknown, status = 200) {
   return NextResponse.json(data, {
     status,
     headers: {
-      "Cache-Control": status === 200 ? "public, s-maxage=600, stale-while-revalidate=1800" : "no-store",
+      "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1800",
     },
   });
 }
@@ -37,7 +37,6 @@ export async function GET() {
         code: "missing_key",
         message: "当前运行环境未配置 QWEATHER_KEY",
       },
-      503,
     );
   }
 
@@ -87,6 +86,5 @@ export async function GET() {
       code: "upstream_failed",
       message: "天气服务暂时不可用，请稍后再试",
     },
-    502,
   );
 }
