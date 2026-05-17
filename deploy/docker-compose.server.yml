@@ -1,0 +1,25 @@
+services:
+  personalblogweb:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        NODE_IMAGE: docker.m.daocloud.io/library/node:22-bookworm-slim
+    image: personalblogweb:local
+    container_name: personalblogweb
+    restart: unless-stopped
+    env_file:
+      - /srv/personalblogweb/shared/.env.production
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "127.0.0.1:13000:3000"
+    networks:
+      - personalblogweb_net
+
+networks:
+  personalblogweb_net:
+    external: true
