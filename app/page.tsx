@@ -10,6 +10,7 @@ import CloudPlayer from '../components/CloudPlayer';
 import ProfileCard from '../components/ProfileCard';
 import SiteDashboard from '../components/SiteDashboard';
 import LyricBar from '../components/LyricBar';
+import WeatherWidget from '../components/WeatherWidget';
 import { ToastProvider } from '../components/ToastProvider';
 import { getContentCollectionDir, getRuntimeAlbums, getRuntimeSiteConfig } from '../lib/contentSource';
 
@@ -145,14 +146,8 @@ export default function Home() {
                     <div className="sm:col-span-2 flex flex-col min-h-[180px] sm:min-h-[200px] min-w-0">
                       <LatestChatterCarousel chatters={top5Chatters} />
                     </div>
-                    <div className="sm:col-span-1 flex flex-col min-h-[160px] sm:min-h-[120px] min-w-0">
-                      <div className="h-full w-full rounded-2xl sm:rounded-3xl bg-white/35 dark:bg-slate-800/45 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-4 sm:p-6 flex flex-col justify-center items-center text-center transition-colors duration-700">
-                        <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 dark:bg-indigo-400/10 text-indigo-500 dark:text-indigo-300 flex items-center justify-center mb-3">
-                          <span className="text-lg font-black">+</span>
-                        </div>
-                        <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-white">氛围卡位</h3>
-                        <p className="mt-1 text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400">后续扩展</p>
-                      </div>
+                    <div className="sm:col-span-1 flex flex-col min-h-[190px] sm:min-h-[200px] min-w-0">
+                      <WeatherWidget />
                     </div>
                   </div>
 

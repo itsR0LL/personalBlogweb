@@ -1,56 +1,92 @@
-// app/api/weather/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+
+type QWeatherNow = {
+  obsTime?: string;
+  temp?: string;
+  feelsLike?: string;
+  icon?: string;
+  text?: string;
+  windDir?: string;
+  windScale?: string;
+  humidity?: string;
+};
+
+const locationId = process.env.QWEATHER_LOCATION || "101010100";
+const locationName = process.env.QWEATHER_LOCATION_NAME || "北京";
+const apiHosts = [
+  "https://api.qweather.com/v7/weather/now",
+  "https://devapi.qweather.com/v7/weather/now",
+];
+
+function json(data: unknown, status = 200) {
+  return NextResponse.json(data, {
+    status,
+    headers: {
+      "Cache-Control": status === 200 ? "public, s-maxage=600, stale-while-revalidate=1800" : "no-store",
+    },
+  });
+}
 
 export async function GET() {
   const token = process.env.QWEATHER_KEY;
-  const locationId = "101010100"; // 北京
 
   if (!token) {
-    console.error("❌ 环境变量 QWEATHER_KEY (Token) 未找到");
-    return NextResponse.json({ code: "500", message: "当前运行环境未配置 QWEATHER_KEY" }, { status: 500 });
+    return json(
+      {
+        success: false,
+        code: "missing_key",
+        message: "当前运行环境未配置 QWEATHER_KEY",
+      },
+      503,
+    );
   }
-
-  // 🌟 核心：按照你提供的文档，尝试两个可能的 Host
-  // 如果你有特定的 API Host（例如 xxx.qweather.com），请把第一个换成它
-  const apiHosts = [
-    'https://api.qweather.com/v7/weather/now',
-    'https://devapi.qweather.com/v7/weather/now'
-  ];
 
   for (const host of apiHosts) {
     try {
-      const url = `${host}?location=${locationId}`;
-      console.log(`📡 尝试使用 Bearer 认证请求: ${host}`);
-
-      const res = await fetch(url, {
-        method: 'GET',
+      const url = `${host}?location=${encodeURIComponent(locationId)}`;
+      const response = await fetch(url, {
         headers: {
-          // 🌟 按照文档要求的 Header 认证格式
-          'Authorization': `Bearer ${token}`,
-          'Accept-Encoding': 'gzip',
-          'User-Agent': 'PersonalBlogWeb-SelfHosted/1.0'
+          Authorization: `Bearer ${token}`,
+          "Accept-Encoding": "gzip",
+          "User-Agent": "PersonalBlogWeb-SelfHosted/1.0",
         },
-        cache: 'no-store'
+        cache: "no-store",
       });
 
-      const data = await res.json();
+      const payload = await response.json();
+      if (payload?.code !== "200" || !payload?.now) continue;
 
-      // 如果返回 200，说明这套 Bearer 认证终于对上暗号了！
-      if (data.code === "200" || res.status === 200) {
-        console.log(`✅ 认证通过! 来源: ${host}`);
-        return NextResponse.json(data);
-      }
-
-      console.warn(`⚠️ ${host} 认证未通过:`, data);
-
-    } catch (err: any) {
-      console.error(`🔥 请求 ${host} 出错:`, err.message);
+      const now = payload.now as QWeatherNow;
+      return json({
+        success: true,
+        code: "200",
+        location: {
+          id: locationId,
+          name: locationName,
+        },
+        now: {
+          obsTime: now.obsTime,
+          temp: Number(now.temp),
+          feelsLike: Number(now.feelsLike),
+          icon: now.icon || "999",
+          text: now.text || "未知",
+          windDir: now.windDir || "",
+          windScale: now.windScale || "",
+          humidity: Number(now.humidity),
+        },
+        source: "qweather",
+      });
+    } catch {
       continue;
     }
   }
 
-  return NextResponse.json({
-    code: "500",
-    message: "认证协议对接失败，请检查当前运行环境中的 QWEATHER_KEY"
-  }, { status: 500 });
+  return json(
+    {
+      success: false,
+      code: "upstream_failed",
+      message: "天气服务暂时不可用，请稍后再试",
+    },
+    502,
+  );
 }
