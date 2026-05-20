@@ -110,7 +110,7 @@ npm run secret:scan
 /timeline
 /photowall
 /music
-/api/chat
+/api/chat/status
 /api/weather
 ```
 

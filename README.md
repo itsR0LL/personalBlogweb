@@ -137,6 +137,9 @@ rebuilding Docker. The public site reads the active content bundle from:
 
 Use `/api/deploy-info` to verify both the running code commit and the active
 content version.
+Use `/api/chat/status` for the AI assistant runtime health check. `GET /api/chat`
+is kept as a compatibility status endpoint, while chat messages still use
+`POST /api/chat`.
 
 Content rollback is available through the manager control page or:
 
