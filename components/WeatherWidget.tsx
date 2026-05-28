@@ -147,7 +147,7 @@ export default function WeatherWidget() {
               </div>
               <div className="flex items-center gap-1.5 rounded-xl bg-white/45 px-2.5 py-2 dark:bg-white/5">
                 <Wind size={13} />
-                {weather.windDir || "微风"} {weather.windScale ? `${weather.windScale}级` : ""}
+                {weather.windDir || "微风"} {weather.windScale || ""}
               </div>
             </div>
           </div>

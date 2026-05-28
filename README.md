@@ -164,5 +164,6 @@ AI_API_KEY=your-provider-key
 ```
 
 The legacy Gemini path is still supported with `AI_PROVIDER=gemini` and
-`GEMINI_API_KEY`. Use `QWEATHER_KEY`, `QWEATHER_API_HOST`, and
-`QWEATHER_LOCATION` for weather. Do not commit those values.
+`GEMINI_API_KEY`. Weather uses Open-Meteo by default and does not require a
+weather API key. Use `WEATHER_LATITUDE`, `WEATHER_LONGITUDE`, and
+`WEATHER_LOCATION_NAME` to change the displayed city.
