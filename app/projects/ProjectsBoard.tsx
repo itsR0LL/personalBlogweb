@@ -1,121 +1,228 @@
 "use client";
 
-import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import BackButton from '../../components/BackButton'; // 注意层级路径
-import { Project, projectsData as bundledProjects } from '../../data/projects';
+import { useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { Code2, ExternalLink, GitBranch, Layers3, Search } from "lucide-react";
+
+import BackButton from "../../components/BackButton";
+import { Project, projectsData as bundledProjects } from "../../data/projects";
+
+const softEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
+const slowEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export default function ProjectsBoard({ projects = bundledProjects }: { projects?: Project[] }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const reduceMotion = Boolean(useReducedMotion());
 
-  // 搜索过滤逻辑
   const filteredProjects = useMemo(() => {
-    if (searchQuery.trim() === "") return projects;
     const query = searchQuery.trim().toLowerCase();
+    if (!query) return projects;
 
-    return projects.filter(project =>
-      project.name.toLowerCase().includes(query) ||
-      project.description.toLowerCase().includes(query) ||
-      project.tags.some(tag => tag.toLowerCase().includes(query))
-    );
+    return projects.filter((project) => {
+      const searchable = [
+        project.name,
+        project.description,
+        project.githubUrl,
+        ...project.tags,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return searchable.includes(query);
+    });
   }, [projects, searchQuery]);
 
+  const originalCount = projects.filter((project) => project.tags.includes("原创项目")).length;
+  const derivativeCount = projects.filter((project) => project.tags.includes("二次开发")).length;
+
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-10 py-10 relative z-10">
-
-      {/* 顶部返回按钮与标题 */}
-      <div className="mb-8 flex flex-col items-center md:items-start">
-        <div className="w-full flex justify-start mb-6">
-          <BackButton />
-        </div>
-        <div className="text-center md:text-left w-full">
-          <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-4 tracking-widest drop-shadow-sm uppercase">
-            Projects Matrix
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 font-serif">
-            开源项目、科研代码与实验室折腾记录。
-          </p>
-        </div>
-      </div>
-
-      {/* 居中的搜索框 */}
-      <div className="mb-12 flex justify-center w-full">
-        <div className="relative w-full max-w-lg">
-          <input
-            type="text"
-            placeholder="搜索项目名称、描述或技术栈..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-full px-6 py-3 pl-12 text-slate-800 dark:text-white shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-slate-500 font-serif"
-          />
-          <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-      </div>
-
-      {/* 矩阵展示区：CSS Grid 布局 */}
-      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 relative">
-        <AnimatePresence>
-          {filteredProjects.map((project) => (
-            <motion.div
-              layout
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -20 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              key={project.id}
-              className="h-full"
-            >
-              <a
-                href={project.githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block h-full rounded-3xl bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-xl overflow-hidden hover:shadow-indigo-500/20 transition-all duration-700 hover:-translate-y-1 group relative p-6 md:p-8"
-              >
-                {/* 装饰性光晕 */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-colors duration-700"></div>
-
-                <div className="flex items-start justify-between mb-4 relative z-10">
-                  <div className="flex items-center gap-4">
-                    <span className="text-4xl">{project.icon}</span>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                      {project.name}
-                    </h2>
-                  </div>
-                  {/* GitHub 图标 */}
-                  <svg className="w-8 h-8 text-slate-400 group-hover:text-slate-800 dark:group-hover:text-white transition-colors flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.379.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
-                  </svg>
-                </div>
-
-                <p className="text-sm text-slate-700 dark:text-slate-300 font-serif leading-relaxed line-clamp-3 mb-6 relative z-10 min-h-[60px]">
-                  {project.description}
-                </p>
-
-                <div className="flex flex-wrap gap-2 relative z-10 mt-auto">
-                  {project.tags.map(tag => (
-                    <span key={tag} className="text-[10px] font-bold tracking-wider uppercase text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-md shadow-sm border border-indigo-500/20">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </a>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
-        {filteredProjects.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="col-span-full text-center py-20 text-slate-500 font-serif w-full"
-          >
-            云端尚未建立代号为 [{searchQuery}] 的档案...
-          </motion.div>
-        )}
+    <main className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-8 lg:px-10">
+      <motion.div
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+        animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+        transition={reduceMotion ? { duration: 0.18 } : { duration: 0.72, ease: slowEase }}
+        className="mb-8 flex justify-start"
+      >
+        <BackButton />
       </motion.div>
 
+      <motion.section
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18 }}
+        animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+        transition={reduceMotion ? { duration: 0.18 } : { duration: 0.86, ease: softEase }}
+        className="mb-10 grid gap-6 lg:grid-cols-[1fr_340px] lg:items-end"
+      >
+        <div>
+          <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-white/60 bg-white/55 px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/45 dark:text-slate-300">
+            <Layers3 size={14} />
+            公开项目边界已收敛
+          </div>
+          <h1 className="text-4xl font-black tracking-normal text-slate-950 drop-shadow-sm dark:text-white sm:text-5xl">
+            项目作品
+          </h1>
+          <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
+            这里仅展示可以公开说明的项目。涉及买断、第三方源码、私有客户或敏感二开边界的内容，不进入公开项目页。
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 overflow-hidden rounded-lg border border-white/60 bg-white/55 text-center shadow-lg shadow-slate-900/5 backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/45 dark:shadow-black/20">
+          <ProjectMetric label="公开项目" value={projects.length} />
+          <ProjectMetric label="原创主导" value={originalCount} />
+          <ProjectMetric label="二次开发" value={derivativeCount} />
+        </div>
+      </motion.section>
+
+      <motion.div
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
+        animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+        transition={reduceMotion ? { duration: 0.18 } : { duration: 0.78, delay: 0.08, ease: softEase }}
+        className="mb-10 flex justify-center"
+      >
+        <label className="sr-only" htmlFor="project-search">
+          搜索项目
+        </label>
+        <div className="relative w-full max-w-xl">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          />
+          <input
+            id="project-search"
+            type="search"
+            placeholder="搜索项目名称、说明或技术标签..."
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            className="w-full rounded-lg border border-white/65 bg-white/58 px-11 py-3 text-sm text-slate-900 shadow-xl shadow-slate-900/5 outline-none backdrop-blur-xl transition-[border-color,background-color,box-shadow] duration-700 placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white/72 focus:shadow-indigo-500/10 focus:ring-2 focus:ring-indigo-400/20 dark:border-white/10 dark:bg-slate-900/50 dark:text-white dark:focus:border-indigo-300/60 dark:focus:bg-slate-900/68"
+          />
+        </div>
+      </motion.div>
+
+      <motion.div layout="position" className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <AnimatePresence mode="popLayout">
+          {filteredProjects.map((project, index) => (
+            <ProjectCard
+              key={project.id}
+              index={index}
+              project={project}
+              reduceMotion={reduceMotion}
+            />
+          ))}
+        </AnimatePresence>
+      </motion.div>
+
+      {filteredProjects.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: reduceMotion ? 0.18 : 0.62, ease: softEase }}
+          className="mt-12 rounded-lg border border-dashed border-slate-300/80 bg-white/45 px-6 py-12 text-center text-sm text-slate-500 shadow-lg shadow-slate-900/5 backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/35 dark:text-slate-400"
+        >
+          没有找到匹配“{searchQuery}”的公开项目。
+        </motion.div>
+      )}
+    </main>
+  );
+}
+
+function ProjectMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="border-r border-slate-200/70 px-3 py-4 last:border-r-0 dark:border-white/10">
+      <div className="text-2xl font-black text-slate-950 dark:text-white">{value}</div>
+      <div className="mt-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">{label}</div>
     </div>
+  );
+}
+
+function ProjectCard({
+  project,
+  index,
+  reduceMotion,
+}: {
+  project: Project;
+  index: number;
+  reduceMotion: boolean;
+}) {
+  const projectType =
+    project.tags.find((tag) => tag === "原创项目" || tag === "二次开发") ?? "公开项目";
+  const displayTags = project.tags.filter((tag) => tag !== projectType);
+  const isDerivative = projectType === "二次开发";
+
+  return (
+    <motion.article
+      layout="position"
+      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 28, scale: 0.965 }}
+      animate={
+        reduceMotion
+          ? { opacity: 1, transition: { duration: 0.18 } }
+          : {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              transition: { duration: 0.82, delay: index * 0.09, ease: softEase },
+            }
+      }
+      exit={
+        reduceMotion
+          ? { opacity: 0, transition: { duration: 0.14 } }
+          : { opacity: 0, y: 14, scale: 0.97, transition: { duration: 0.42, ease: softEase } }
+      }
+      whileHover={
+        reduceMotion
+          ? undefined
+          : { y: -6, scale: 1.012, transition: { duration: 0.55, ease: softEase } }
+      }
+      className="h-full transform-gpu will-change-transform"
+    >
+      <a
+        href={project.githubUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group relative flex h-full min-h-[360px] flex-col overflow-hidden rounded-lg border border-white/60 bg-white/60 p-6 shadow-xl shadow-slate-900/5 backdrop-blur-md transition-colors duration-700 hover:border-indigo-300/70 hover:bg-white/74 dark:border-white/10 dark:bg-slate-900/52 dark:shadow-black/20 dark:hover:border-indigo-300/40 dark:hover:bg-slate-900/68 md:p-8"
+      >
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-300/55 to-transparent opacity-55 transition-opacity duration-700 group-hover:opacity-100 dark:via-indigo-200/35" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white/36 via-transparent to-indigo-100/22 opacity-0 transition-opacity duration-[900ms] group-hover:opacity-100 dark:from-white/5 dark:to-indigo-500/10" />
+
+        <div className="relative z-10 mb-6 flex items-start justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-slate-200/80 bg-white/64 text-base font-black tracking-wide text-slate-700 shadow-sm transition-colors duration-700 group-hover:border-indigo-300 group-hover:bg-indigo-50/75 group-hover:text-indigo-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:group-hover:border-indigo-300/40 dark:group-hover:bg-indigo-400/10 dark:group-hover:text-indigo-200">
+              {project.icon}
+            </div>
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-bold ${
+                isDerivative
+                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                  : "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300"
+              }`}
+            >
+              {isDerivative ? <GitBranch size={12} /> : <Code2 size={12} />}
+              {projectType}
+            </span>
+          </div>
+          <ExternalLink
+            aria-hidden="true"
+            className="h-5 w-5 shrink-0 text-slate-400 transition-[color,transform] duration-700 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-indigo-600 dark:group-hover:text-indigo-300"
+          />
+        </div>
+
+        <h2 className="relative z-10 text-2xl font-black leading-snug text-slate-950 transition-colors duration-700 group-hover:text-indigo-700 dark:text-white dark:group-hover:text-indigo-200">
+          {project.name}
+        </h2>
+
+        <p className="relative z-10 mt-5 flex-1 text-sm leading-7 text-slate-700 dark:text-slate-300">
+          {project.description}
+        </p>
+
+        <div className="relative z-10 mt-7 flex flex-wrap gap-2">
+          {displayTags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-lg border border-slate-200/75 bg-white/56 px-2.5 py-1 text-[11px] font-semibold text-slate-600 shadow-sm transition-colors duration-700 group-hover:border-indigo-200 group-hover:bg-indigo-50/55 group-hover:text-indigo-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:group-hover:border-indigo-300/25 dark:group-hover:bg-indigo-400/10 dark:group-hover:text-indigo-200"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      </a>
+    </motion.article>
   );
 }

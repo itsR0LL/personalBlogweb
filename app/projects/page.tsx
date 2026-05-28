@@ -1,12 +1,11 @@
 import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
-import BlogReveal from '../../components/motion/BlogReveal';
 import ProjectsBoard from './ProjectsBoard';
 import { getRuntimeProjects } from '../../lib/contentSource';
 
 export const metadata = {
-  title: "Projects | R0L1 Studio",
-  description: "Project notes and code repositories",
+  title: "项目作品 | R0L1 Studio",
+  description: "公开项目、工程化重构与可展示的开发记录",
 };
 
 export const dynamic = 'force-dynamic';
@@ -16,12 +15,8 @@ export default function ProjectsPage() {
   return (
     <div className="min-h-screen relative pb-20">
       <Navbar />
-      <PageTransition>
-        <BlogReveal preset="list" className="mt-28">
-          <div data-blog-reveal>
-            <ProjectsBoard projects={projects} />
-          </div>
-        </BlogReveal>
+      <PageTransition className="mt-28">
+        <ProjectsBoard projects={projects} />
       </PageTransition>
     </div>
   );
