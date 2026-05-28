@@ -13,10 +13,7 @@ type QWeatherNow = {
 
 const locationId = process.env.QWEATHER_LOCATION || "101010100";
 const locationName = process.env.QWEATHER_LOCATION_NAME || "北京";
-const apiHosts = [
-  "https://api.qweather.com/v7/weather/now",
-  "https://devapi.qweather.com/v7/weather/now",
-];
+const configuredApiHost = process.env.QWEATHER_API_HOST || process.env.QWEATHER_HOST || "";
 
 function json(data: unknown, status = 200) {
   return NextResponse.json(data, {
@@ -27,33 +24,66 @@ function json(data: unknown, status = 200) {
   });
 }
 
+function normalizeApiHost(value: string) {
+  const host = value.trim().replace(/\/+$/, "");
+  if (!host) return "";
+  return host.startsWith("http://") || host.startsWith("https://") ? host : `https://${host}`;
+}
+
+function apiEndpoints() {
+  const apiHost = normalizeApiHost(configuredApiHost);
+  if (apiHost) {
+    return [`${apiHost}/v7/weather/now`];
+  }
+  return [
+    "https://api.qweather.com/v7/weather/now",
+    "https://devapi.qweather.com/v7/weather/now",
+  ];
+}
+
+function authHeaders(token: string) {
+  const mode = (process.env.QWEATHER_AUTH_MODE || "auto").toLowerCase();
+  const looksLikeJwt = token.split(".").length === 3;
+  const headers: Record<string, string> = {
+    "Accept-Encoding": "gzip",
+    "User-Agent": "PersonalBlogWeb-SelfHosted/1.0",
+  };
+
+  if (mode === "jwt" || (mode === "auto" && looksLikeJwt)) {
+    headers.Authorization = `Bearer ${token}`;
+  } else {
+    headers["X-QW-Api-Key"] = token;
+  }
+
+  return headers;
+}
+
 export async function GET() {
   const token = process.env.QWEATHER_KEY;
 
   if (!token) {
-    return json(
-      {
-        success: false,
-        code: "missing_key",
-        message: "当前运行环境未配置 QWEATHER_KEY",
-      },
-    );
+    return json({
+      success: false,
+      code: "missing_key",
+      message: "当前运行环境未配置 QWEATHER_KEY",
+    });
   }
 
-  for (const host of apiHosts) {
+  let lastError = "";
+
+  for (const host of apiEndpoints()) {
     try {
       const url = `${host}?location=${encodeURIComponent(locationId)}`;
       const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Accept-Encoding": "gzip",
-          "User-Agent": "PersonalBlogWeb-SelfHosted/1.0",
-        },
+        headers: authHeaders(token),
         cache: "no-store",
       });
 
       const payload = await response.json();
-      if (payload?.code !== "200" || !payload?.now) continue;
+      if (payload?.code !== "200" || !payload?.now) {
+        lastError = payload?.error?.title || payload?.error?.detail || payload?.code || `HTTP ${response.status}`;
+        continue;
+      }
 
       const now = payload.now as QWeatherNow;
       return json({
@@ -75,16 +105,15 @@ export async function GET() {
         },
         source: "qweather",
       });
-    } catch {
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : "unknown_error";
       continue;
     }
   }
 
-  return json(
-    {
-      success: false,
-      code: "upstream_failed",
-      message: "天气服务暂时不可用，请稍后再试",
-    },
-  );
+  return json({
+    success: false,
+    code: "upstream_failed",
+    message: lastError ? `天气服务暂时不可用：${lastError}` : "天气服务暂时不可用，请稍后再试",
+  });
 }

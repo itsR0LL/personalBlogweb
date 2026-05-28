@@ -68,6 +68,9 @@ AI_BASE_URL=https://api.siliconflow.cn/v1
 AI_MODEL=Qwen/Qwen3-8B
 AI_API_KEY=...
 QWEATHER_KEY=...
+QWEATHER_API_HOST=...
+QWEATHER_LOCATION=101270101
+QWEATHER_LOCATION_NAME=成都
 ```
 
 Write them only to:
