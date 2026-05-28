@@ -85,7 +85,7 @@ export default function Home() {
       });
     }
   } catch {}
-  const top5Chatters = allChatters.length > 0 ? allChatters.slice(0, 5) : [{ slug: 'none', title: '暂无记录', description: '记录一段思绪...', cover: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop', date: '', formattedDate: '' }];
+  const top5Chatters = allChatters.length > 0 ? allChatters.slice(0, 5) : [{ slug: 'none', title: '暂无随笔', description: '记录一段思绪...', cover: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop', date: '', formattedDate: '' }];
 
   const chatterCount = allChatters.length;
   const realPhotoCount = albums.reduce((total, album) => total + album.photos.length, 0);
@@ -119,7 +119,7 @@ export default function Home() {
               {/* 歌词栏 */}
               <div data-home-reveal className="hidden sm:block w-full mt-[-10px]"><LyricBar/></div>
 
-              {/* 第二行：文章轮播 + 照片墙 + 说说 + 主题切换 */}
+              {/* 第二行：文章轮播 + 照片墙 + 动态 + 天气 */}
               <div data-home-reveal className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 w-full">
 
                 {/* 左侧：文章轮播 (电脑端占4列，手机端排最上面) */}
@@ -140,7 +140,7 @@ export default function Home() {
                     </div>
                   </Link>
 
-                  {/* 底层网格：说说轮播 + 氛围卡位 */}
+                  {/* 底层网格：随笔轮播 + 天气卡片 */}
                   {/* 手机上单列，平板上分3列比例分布 */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full flex-1">
                     <div className="sm:col-span-2 flex flex-col min-h-[180px] sm:min-h-[200px] min-w-0">

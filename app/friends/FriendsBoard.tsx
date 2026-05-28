@@ -150,7 +150,7 @@ export default function FriendsBoard({ friends = bundledFriends }: { friends?: F
             href="#comments-container"
             className="inline-block px-6 py-2.5 md:px-8 md:py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-full text-sm md:text-base font-bold tracking-widest transition-[transform,color,background-color] duration-300 hover:scale-[1.03] active:scale-95 shadow-lg shadow-indigo-500/30"
           >
-            View comment status
+            查看留言规划
           </a>
         </div>
       </motion.div>
@@ -173,7 +173,7 @@ export default function FriendsBoard({ friends = bundledFriends }: { friends?: F
         </div>
 
         {/* 渲染评论组件 */}
-        <Comments />
+        <Comments variant="guestbook" />
       </motion.div>
 
     </div>

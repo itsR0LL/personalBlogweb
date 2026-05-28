@@ -131,7 +131,7 @@ export default async function AboutPage() {
 
               {/* 👇 评论区：放置在正文的最下方 */}
               <div className="mt-12 md:mt-16">
-                <Comments />
+                <Comments variant="guestbook" />
               </div>
 
             </div>

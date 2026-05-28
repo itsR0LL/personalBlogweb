@@ -184,7 +184,7 @@ export default async function Post({ params }: { params: Promise<{ slug: string 
               </div>
 
               <div className="mt-12 md:mt-16">
-                <Comments />
+                <Comments variant="article" />
               </div>
 
             </div>

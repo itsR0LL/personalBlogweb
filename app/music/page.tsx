@@ -438,7 +438,7 @@ export default function MusicPage() {
                   <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium">记录这首歌带来的想法。</p>
                 </div>
               </div>
-              <Comments />
+              <Comments variant="music" />
             </div>
           </section>
         </main>

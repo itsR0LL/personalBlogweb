@@ -4,7 +4,7 @@ import ProjectsBoard from './ProjectsBoard';
 import { getRuntimeProjects } from '../../lib/contentSource';
 
 export const metadata = {
-  title: "项目作品 | R0L1 Studio",
+  title: "项目",
   description: "公开项目、工程化重构与可展示的开发记录",
 };
 

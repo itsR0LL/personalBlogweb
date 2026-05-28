@@ -205,7 +205,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
 
               {/* 👇 评论区 */}
               <div className="mt-10 md:mt-12">
-                <Comments />
+                <Comments variant="article" />
               </div>
 
             </div>
