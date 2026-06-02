@@ -71,6 +71,8 @@ WEATHER_LATITUDE=30.5728
 WEATHER_LONGITUDE=104.0668
 WEATHER_LOCATION_NAME=成都
 WEATHER_TIMEZONE=Asia/Shanghai
+SECURITY_LOG_COLLECTOR_URL=https://security-log.r0l1dehome.asia
+SECURITY_LOG_INGEST_TOKEN=...
 ```
 
 Write them only to:
@@ -90,6 +92,25 @@ GEMINI_API_KEY=...
 
 For the current self-hosted server in mainland network conditions, prefer the
 OpenAI-compatible configuration above.
+
+## Security Studio Access Log Collector
+
+The public site reports page-view summaries through `proxy.ts`.
+
+Runtime variables:
+
+```text
+SECURITY_LOG_COLLECTOR_URL=https://security-log.r0l1dehome.asia
+SECURITY_LOG_INGEST_TOKEN=...
+```
+
+Behavior:
+
+- Only public `GET` and `HEAD` page requests are collected.
+- `/api`, Next.js internal assets, image optimization, metadata files, and static files are excluded.
+- The token is read only on the server and must not be exposed with `NEXT_PUBLIC_`.
+- Visitor IP and country are taken from Cloudflare / reverse-proxy headers (`cf-connecting-ip`, `x-forwarded-for`, `x-real-ip`, `cf-ipcountry`) when available.
+- The proxy does not know the final response status, so it sends `statusCode: 0`; Security Studio uses it mainly for access distribution and rule matching on path / query / user-agent.
 
 ## Local Release Flow
 
