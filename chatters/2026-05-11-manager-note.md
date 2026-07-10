@@ -5,7 +5,7 @@ tags:
 - 博客管理
 - 占位内容
 mood: 整理中
-cover: https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200&auto=format&fit=crop
+cover: https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-996fce0b337e9f32.jpg
 description: ''
 ---
 

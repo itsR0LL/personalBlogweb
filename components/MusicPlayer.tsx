@@ -65,7 +65,7 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
               id: song.id,
               title: song.name || '未知歌曲',
               artist: song.artist || '未知歌手',
-              cover: song.cover || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=300',
+              cover: song.cover || 'https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-996fce0b337e9f32.jpg',
               src: song.url,
               lrcUrl: song.lrc
             };

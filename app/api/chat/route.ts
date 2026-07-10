@@ -30,6 +30,10 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 20;
 const MAX_MESSAGE_CHARS = 2000;
 const UPSTREAM_TIMEOUT_MS = 20_000;
+const ALLOWED_SITE_ORIGINS = new Set([
+  'https://r0l1dehome.asia',
+  'https://www.r0l1dehome.asia',
+]);
 
 const rateBuckets = new Map<string, { windowStart: number; count: number }>();
 
@@ -38,7 +42,7 @@ function getAllowedOrigin(req?: Request) {
   if (!origin) return '';
   if (/^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return origin;
   if (origin === 'http://www.muchuan.online:18080') return origin;
-  if (origin === 'https://r0lldehome.asia' || origin === 'https://www.r0lldehome.asia') return origin;
+  if (ALLOWED_SITE_ORIGINS.has(origin)) return origin;
   return '';
 }
 

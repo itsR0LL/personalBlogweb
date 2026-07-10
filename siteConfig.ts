@@ -2,7 +2,7 @@
 
 export const siteConfig = {
   title: "R0L1_の小家",
-  faviconUrl: "https://v1.lskypro.com/thumbnails/01f4a4584bace1a3b670c6791a0f5f57.png",
+  faviconUrl: "https://img.r0l1dehome.asia/site/2026/07/20260710T074807Z-2e36605f52e7540f.png",
   authorName: "R0L1_",
   bio: "",
 
@@ -10,16 +10,37 @@ export const siteConfig = {
   navSuffix: "の",
   navAfter: "小家",
 
-  avatarUrl: "https://v1.lskypro.com/thumbnails/01f4a4584bace1a3b670c6791a0f5f57.png",
+  avatarUrl: "https://img.r0l1dehome.asia/site/2026/07/20260710T074807Z-2e36605f52e7540f.png",
 
   useGradient: false,
   themeColors: ["#e2e8f0", "#bfdbfe", "#bbf7d0", "#fde68a"],
-  bgImages: ["/images/backgrounds/light-1.png", "/images/backgrounds/light-2.jpg", "/images/backgrounds/light-3.jpg", "/images/backgrounds/light-4.webp", "/images/backgrounds/light-5.jpg", "/images/backgrounds/light-6.jpg"],
-  lightBgImages: ["/images/backgrounds/light-1.png", "/images/backgrounds/light-2.jpg", "/images/backgrounds/light-3.jpg", "/images/backgrounds/light-4.webp", "/images/backgrounds/light-5.jpg", "/images/backgrounds/light-6.jpg"],
-  darkBgImages: ["/images/backgrounds/dark-1.jpg", "/images/backgrounds/dark-2.jpg", "/images/backgrounds/dark-3.png", "/images/backgrounds/dark-4.jpg", "/images/backgrounds/dark-5.webp", "/images/backgrounds/dark-6.jpg"],
+  bgImages: [
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074807Z-2e36605f52e7540f.png",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-996fce0b337e9f32.jpg",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-79789f1221ceadf8.jpg",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-7fca204c3d0162d0.webp",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074809Z-6948f7d85102ec84.jpg",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074809Z-f22dd0254c2606dd.jpg",
+  ],
+  lightBgImages: [
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074807Z-2e36605f52e7540f.png",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-996fce0b337e9f32.jpg",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-79789f1221ceadf8.jpg",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-7fca204c3d0162d0.webp",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074809Z-6948f7d85102ec84.jpg",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074809Z-f22dd0254c2606dd.jpg",
+  ],
+  darkBgImages: [
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074804Z-f3dcbf758632308e.jpg",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074805Z-9e719616ee2b89e5.jpg",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074805Z-db917a053a228b6e.png",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074805Z-c20ec88eadefe321.jpg",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074806Z-c6c288beceee7852.webp",
+    "https://img.r0l1dehome.asia/site/2026/07/20260710T074806Z-021fe841a25e4515.jpg",
+  ],
 
-  defaultPostCover: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop",
-  photoWallImage: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop",
+  defaultPostCover: "https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-996fce0b337e9f32.jpg",
+  photoWallImage: "https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-79789f1221ceadf8.jpg",
 
   musicLibrary: [
     {

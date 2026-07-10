@@ -56,7 +56,7 @@ export default function PhotoWallPage() {
     ).filter(photo => photo.caption?.toLowerCase().includes(activeQuery));
 
     return { matchedAlbums, matchedPhotos };
-  }, [activeQuery]);
+  }, [activeQuery, albums]);
 
   useGSAP(
     () => {

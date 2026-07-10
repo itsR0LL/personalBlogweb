@@ -3,7 +3,7 @@ title: 关于我
 date: '2026-05-11'
 tags: []
 mood: ''
-cover: https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop
+cover: https://img.r0l1dehome.asia/site/2026/07/20260710T074809Z-6948f7d85102ec84.jpg
 description: ''
 ---
 

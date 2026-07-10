@@ -2,7 +2,7 @@
 title: "管理端占位文章"
 date: "2026-05-11 10:00:00"
 description: "用于验证博客列表、详情页和编辑流程的中性占位文章。"
-cover: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop"
+cover: "https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-996fce0b337e9f32.jpg"
 tags: ["占位内容", "博客管理"]
 ---
 

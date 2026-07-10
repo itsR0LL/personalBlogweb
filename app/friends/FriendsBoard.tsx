@@ -26,7 +26,7 @@ export default function FriendsBoard({ friends = bundledFriends }: { friends?: F
   const [isCopied, setIsCopied] = useState(false);
 
   // 预设的申请格式
-  const applyFormat = `Name: R0L1 Studio\nDescription: A solo developer blog about AI agents, product building, and engineering notes.\nLink: https://your-domain.example\nAvatar: https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?q=80&w=400&auto=format&fit=crop`;
+  const applyFormat = `Name: R0L1 Studio\nDescription: A solo developer blog about AI agents, product building, and engineering notes.\nLink: https://your-domain.example\nAvatar: https://img.r0l1dehome.asia/site/2026/07/20260710T074807Z-2e36605f52e7540f.png`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(applyFormat);

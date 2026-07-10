@@ -100,7 +100,7 @@ type SiteConfigWithMusic = Omit<typeof siteConfig, "musicLibrary" | "cloudMusicI
 };
 
 const MusicContext = createContext<MusicContextType | null>(null);
-const fallbackCover = "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop";
+const fallbackCover = "https://img.r0l1dehome.asia/site/2026/07/20260710T074808Z-996fce0b337e9f32.jpg";
 
 function parseLrc(lrcText: string): LyricLine[] {
   if (!lrcText || lrcText.length > 30000) return [];

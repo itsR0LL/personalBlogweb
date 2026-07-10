@@ -67,6 +67,8 @@ export function getRuntimeSiteConfig(): RuntimeSiteConfig {
     ...site,
     ...music,
   };
+  delete config.picBedName;
+  delete config.picBedUrl;
   delete config.picBedToken;
   if (config.gitalkConfig && typeof config.gitalkConfig === "object") {
     config.gitalkConfig = {
