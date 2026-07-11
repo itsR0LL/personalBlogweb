@@ -9,6 +9,7 @@ CURRENT_LINK="$APP_ROOT/current"
 CONTENT_ROOT="$SHARED_DIR/content"
 CONTENT_RELEASES_DIR="$CONTENT_ROOT/releases"
 CONTENT_CURRENT_LINK="$CONTENT_ROOT/current"
+COMMENTS_DATA_DIR="$SHARED_DIR/comments"
 REPO_URL="https://github.com/itsR0LL/personalBlogweb.git"
 BRANCH="main"
 KEEP_RELEASES=5
@@ -34,6 +35,7 @@ log() {
 ensure_layout() {
   mkdir -p "$RELEASES_DIR" "$SHARED_DIR" "$LOG_DIR"
   mkdir -p "$CONTENT_RELEASES_DIR"
+  install -d -o 10002 -g 10002 -m 750 "$COMMENTS_DATA_DIR"
   touch "$SHARED_DIR/.env.production"
   chmod 600 "$SHARED_DIR/.env.production"
 
@@ -47,6 +49,7 @@ status() {
   log "current=$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   log "content_current=$(readlink -f "$CONTENT_CURRENT_LINK" 2>/dev/null || true)"
   docker ps --filter name=personalblogweb --format 'container={{.Names}} image={{.Image}} status={{.Status}} ports={{.Ports}}'
+  docker ps --filter name=personalblog-comments --format 'container={{.Names}} image={{.Image}} status={{.Status}} ports={{.Ports}}'
   if curl -fsS --max-time 5 "$HEALTH_URL" >/dev/null; then
     log "health=ok url=$HEALTH_URL"
   else

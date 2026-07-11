@@ -438,7 +438,17 @@ export default function MusicPage() {
                   <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium">记录这首歌带来的想法。</p>
                 </div>
               </div>
-              <Comments variant="music" />
+              <Comments
+                variant="music"
+                channel="music"
+                showHeader={false}
+                songs={playlist.map((song) => ({
+                  id: song.id,
+                  title: song.title,
+                  artist: song.artist,
+                }))}
+                defaultSongId={currentSong?.id || ""}
+              />
             </div>
           </section>
         </main>

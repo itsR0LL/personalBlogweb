@@ -61,7 +61,7 @@ export default function ProjectsBoard({ projects = bundledProjects }: { projects
             项目作品
           </h1>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
-            这里仅展示可以公开说明的项目。涉及买断、第三方源码、私有客户或敏感二开边界的内容，不进入公开项目页。
+            这里仅展示可以与我相关的且公开的项目 :-D，其他项目我就偷偷藏起来了= =
           </p>
         </div>
 

@@ -73,6 +73,12 @@ WEATHER_LOCATION_NAME=成都
 WEATHER_TIMEZONE=Asia/Shanghai
 SECURITY_LOG_COLLECTOR_URL=https://security-log.r0l1dehome.asia
 SECURITY_LOG_INGEST_TOKEN=...
+COMMENTS_SERVICE_TOKEN=...
+COMMENTS_ADMIN_TOKEN=...
+COMMENTS_HASH_SECRET=...
+TURNSTILE_SITE_KEY=...
+TURNSTILE_SECRET_KEY=...
+TURNSTILE_EXPECTED_HOSTNAME=r0l1dehome.asia
 ```
 
 Write them only to:
@@ -82,6 +88,12 @@ Write them only to:
 ```
 
 Do not commit real API keys, tokens, cookies, SSH keys, or runtime config files.
+
+The comments database persists at
+`/srv/personalblogweb/shared/comments/comments.db`. The comments container has
+no host port; the public site proxies reads and Turnstile-validated submissions.
+See `COMMENTS.md` for moderation states, manager configuration, and backup or
+restore commands.
 
 `/api/chat` still supports the legacy Gemini path:
 
@@ -136,6 +148,8 @@ npm run secret:scan
 /music
 /api/chat/status
 /api/weather
+/api/comments/config
+/api/comments?channel=guestbook&page=1&pageSize=20
 ```
 
 The first rollout of content publishing requires one normal code deployment so the server has the updated `personalblogweb-deploy content-*` commands and the Docker container has the content directory mounted.

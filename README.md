@@ -34,36 +34,29 @@ These scripts start and stop only the public site in this folder.
 
 ## Images
 
-Put local images under `public/images` and reference them from code with `/images/...` paths.
-
-Recommended structure:
-
-```text
-public/images/avatar.jpg
-public/images/backgrounds/background-1.jpg
-public/images/covers/ai-agent.jpg
-public/images/albums/workspace-1.jpg
-```
+Public content images should be stored in Roll's Gallery and referenced with
+`https://img.r0l1dehome.asia/...` URLs. Do not add blog assets to
+`public/images` unless they are code-owned static files.
 
 Common replacements:
 
 ```ts
 // siteConfig.ts
-avatarUrl: "/images/avatar.jpg"
+avatarUrl: "https://img.r0l1dehome.asia/site/..."
 bgImages: [
-  "/images/backgrounds/background-1.jpg",
-  "/images/backgrounds/background-2.jpg",
-  "/images/backgrounds/background-3.jpg",
+  "https://img.r0l1dehome.asia/site/...",
+  "https://img.r0l1dehome.asia/site/...",
+  "https://img.r0l1dehome.asia/site/...",
 ]
-defaultPostCover: "/images/covers/default.jpg"
-photoWallImage: "/images/albums/workspace-1.jpg"
+defaultPostCover: "https://img.r0l1dehome.asia/site/..."
+photoWallImage: "https://img.r0l1dehome.asia/photowall/..."
 ```
 
 Article cover example:
 
 ```md
 ---
-cover: "/images/covers/ai-agent.jpg"
+cover: "https://img.r0l1dehome.asia/posts/..."
 ---
 ```
 
@@ -71,7 +64,7 @@ Album image example:
 
 ```ts
 {
-  url: "/images/albums/workspace-1.jpg",
+  url: "https://img.r0l1dehome.asia/photowall/...",
   caption: "Workspace"
 }
 ```
@@ -82,6 +75,16 @@ Album image example:
 npm run lint
 npm run build
 ```
+
+## Comments
+
+The music page and `/about` use the self-hosted comments service. Submissions
+are persisted in server SQLite with `pending` status and become public only
+after approval in the local manager. Music comments share one stream and retain
+the selected song as secondary metadata.
+
+See [`COMMENTS.md`](COMMENTS.md) for runtime variables, moderation states,
+Turnstile setup, and backup or restore commands.
 
 ## Manager App
 

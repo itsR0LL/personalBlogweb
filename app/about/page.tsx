@@ -2,7 +2,6 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import Link from 'next/link';
 
 // 🌟 1. 核心升级：引入现代统一解析流 (和文章页保持绝对一致)
 import { unified } from 'unified';
@@ -131,7 +130,7 @@ export default async function AboutPage() {
 
               {/* 👇 评论区：放置在正文的最下方 */}
               <div className="mt-12 md:mt-16">
-                <Comments variant="guestbook" />
+                <Comments variant="guestbook" channel="guestbook" />
               </div>
 
             </div>
